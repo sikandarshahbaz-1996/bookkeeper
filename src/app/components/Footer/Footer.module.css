@@ -1,0 +1,30 @@
+.footer {
+  width: 100%;
+  padding: 2.5rem 2rem; /* Adjusted padding */
+  text-align: center;
+  background-color: #343a40; /* Dark background */
+  color: #f8f9fa; /* Light text */
+  margin-top: auto; /* Helps push footer down if content is short */
+  flex-shrink: 0; /* Prevent footer from shrinking */
+  box-sizing: border-box; /* Include padding in width */
+}
+
+.footer p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #ced4da; /* Slightly softer text color */
+}
+
+/* Optional: Add responsive padding */
+@media (max-width: 768px) {
+  .footer {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 1.5rem 1rem;
+     font-size: 0.85rem;
+  }
+}

@@ -134,12 +134,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Add extra space before footer */}
-      <div style={{ marginBottom: '4rem' }}></div> 
-
-      <footer className={styles.footer}>
-        <p>&copy; {new Date().getFullYear()} Bookkeeper Connect. All rights reserved.</p>
-      </footer>
+      {/* Footer is now in RootLayout */}
     </main>
   );
 }

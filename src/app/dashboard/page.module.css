@@ -153,16 +153,43 @@
 .checkboxLabel {
   display: flex;
   align-items: center;
-  font-size: 14px; /* Slightly smaller for edit mode */
+  font-size: 15px; /* Match signup style */
   color: #333;
   cursor: pointer;
+  line-height: 1.4; 
 }
+
 .checkboxLabel input[type="checkbox"] {
-  margin-right: 8px;
-  accent-color: #667eea; 
-  width: 16px;
-  height: 16px;
+  appearance: none; 
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #ffffff;
+  border: 1px solid #667eea;
+  border-radius: 3px; 
+  width: 18px; 
+  height: 18px;
+  margin-right: 10px; 
+  position: relative;
   cursor: pointer;
+  outline: none;
+}
+
+.checkboxLabel input[type="checkbox"]:checked {
+  background-color: #667eea; 
+  border-color: #667eea;
+}
+
+/* Custom checkmark */
+.checkboxLabel input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 

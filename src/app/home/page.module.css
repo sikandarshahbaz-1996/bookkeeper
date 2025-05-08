@@ -227,14 +227,7 @@
 }
 
 
-.footer {
-  width: 100%;
-  padding: 3rem 2rem; /* Increased padding */
-  text-align: center;
-  background-color: #343a40;
-  color: #f8f9fa;
-  margin-top: auto; 
-}
+/* .footer style removed, moved to Footer component */
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
