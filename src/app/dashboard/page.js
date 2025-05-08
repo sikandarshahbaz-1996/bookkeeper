@@ -45,6 +45,7 @@ function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true); // Loading profile initially
   const [isSaving, setIsSaving] = useState(false); // Saving state (can be used for both profile and business)
   const [error, setError] = useState('');
+  const [serviceRateErrors, setServiceRateErrors] = useState({}); // For rate input validation
 
   // Fetch profile data
   const fetchProfile = useCallback(async () => {
@@ -66,12 +67,17 @@ function DashboardPage() {
       setProfileData(data.user);
       setEditData(data.user); // Initialize profile edit form data
       // Initialize business edit form data - assuming business fields might be nested or top-level
+      // Ensure servicesOffered is an array of objects { service: string, rate: number/string }
+      const initialServices = Array.isArray(data.user.servicesOffered)
+        ? data.user.servicesOffered.map(s => typeof s === 'string' ? { service: s, rate: '' } : s)
+        : [];
+
       setEditBusinessData({
         businessName: data.user.businessName || '',
         businessAddress: data.user.businessAddress || '',
         businessPhone: data.user.businessPhone || '',
         businessEmail: data.user.businessEmail || '',
-        servicesOffered: data.user.servicesOffered || [], // Initialize servicesOffered
+        servicesOffered: initialServices,
       });
     } catch (err) {
       setError(err.message);
@@ -183,30 +189,78 @@ function DashboardPage() {
     setEditBusinessData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleBusinessCheckboxChange = (listName, value) => {
+  const handleBusinessCheckboxChange = (serviceName) => {
     setEditBusinessData(prev => {
-      const currentList = prev[listName] || [];
-      const newList = currentList.includes(value)
-        ? currentList.filter(item => item !== value)
-        : [...currentList, value];
-      return { ...prev, [listName]: newList };
+      const currentServices = prev.servicesOffered || [];
+      const existingServiceIndex = currentServices.findIndex(s => s.service === serviceName);
+
+      let newServices;
+      if (existingServiceIndex > -1) { // Service is being unchecked
+        newServices = currentServices.filter(s => s.service !== serviceName);
+        // Clear error for this service if it's unchecked
+        setServiceRateErrors(prevErrors => {
+          const nextErrors = { ...prevErrors };
+          delete nextErrors[serviceName];
+          return nextErrors;
+        });
+      } else { // Service is being checked
+        newServices = [...currentServices, { service: serviceName, rate: '' }];
+      }
+      return { ...prev, servicesOffered: newServices };
     });
+  };
+
+  const handleServiceRateChange = (serviceName, rate) => {
+    setEditBusinessData(prev => {
+      const newServices = (prev.servicesOffered || []).map(s =>
+        s.service === serviceName ? { ...s, rate: rate } : s
+      );
+      return { ...prev, servicesOffered: newServices };
+    });
+    // Clear error for this service when user types
+    if (serviceRateErrors[serviceName]) {
+        setServiceRateErrors(prevErrors => {
+            const nextErrors = { ...prevErrors };
+            delete nextErrors[serviceName];
+            return nextErrors;
+        });
+    }
   };
 
   const handleSaveBusinessChanges = async () => {
     if (!token || !editBusinessData) return;
+
+    // Validation for service rates
+    const currentServiceRateErrors = {};
+    let hasErrors = false;
+    (editBusinessData.servicesOffered || []).forEach(item => {
+      if (item.rate === '' || item.rate === null || isNaN(parseFloat(item.rate)) || parseFloat(item.rate) < 0) {
+        currentServiceRateErrors[item.service] = 'Hourly rate must be a valid number.';
+        hasErrors = true;
+      }
+    });
+
+    setServiceRateErrors(currentServiceRateErrors);
+
+    if (hasErrors) {
+      toast.error('Please correct the errors in service rates.');
+      return;
+    }
+
     setIsSaving(true);
     setError('');
 
-    // Prepare payload for business info
-    const businessPayload = { ...editBusinessData };
-    // Ensure only defined fields are sent, or fields the API expects for business info.
-    // The API will filter based on `allowedUpdates`, but good practice to send clean data.
-    // For example, if API expects these under a 'businessInfo' object, structure accordingly.
-    // For now, sending them as top-level properties as per current API modification.
+    // Prepare payload, ensuring rates are numbers
+    const businessPayload = {
+      ...editBusinessData,
+      servicesOffered: (editBusinessData.servicesOffered || []).map(s => ({
+        ...s,
+        rate: parseFloat(s.rate) // Ensure rate is a number
+      })),
+    };
 
     try {
-      const response = await fetch('/api/user/profile', { 
+      const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -220,14 +274,24 @@ function DashboardPage() {
       // API should return the updated user object, which includes business info
       setProfileData(data.user); 
       // Update editBusinessData to reflect the saved state from the potentially modified data.user
+      // Ensure servicesOffered from API is correctly structured for the state
+      const updatedServicesFromAPI = Array.isArray(data.user.servicesOffered)
+        ? data.user.servicesOffered.map(s => ({
+            service: s.service,
+            // Ensure rate is a string for the input field, or handle as needed
+            rate: s.rate !== undefined && s.rate !== null ? String(s.rate) : '',
+          }))
+        : [];
+
       setEditBusinessData({
         businessName: data.user.businessName || '',
         businessAddress: data.user.businessAddress || '',
         businessPhone: data.user.businessPhone || '',
         businessEmail: data.user.businessEmail || '',
-        servicesOffered: data.user.servicesOffered || [], // Update servicesOffered
+        servicesOffered: updatedServicesFromAPI,
       });
-      setIsEditingBusiness(false); 
+      setIsEditingBusiness(false);
+      setServiceRateErrors({}); // Clear errors on successful save
       toast.success(data.message || 'Business information updated successfully!');
 
     } catch (err) {
@@ -240,15 +304,19 @@ function DashboardPage() {
 
   const handleCancelBusinessEdit = () => {
     // Reset business edit form data to original or last saved business data from profileData
+    const resetServices = Array.isArray(profileData.servicesOffered)
+        ? profileData.servicesOffered.map(s => typeof s === 'string' ? { service: s, rate: '' } : ({ ...s, rate: s.rate !== undefined && s.rate !== null ? String(s.rate) : '' }))
+        : [];
     setEditBusinessData({
         businessName: profileData.businessName || '',
         businessAddress: profileData.businessAddress || '',
         businessPhone: profileData.businessPhone || '',
         businessEmail: profileData.businessEmail || '',
-        servicesOffered: profileData.servicesOffered || [], // Reset servicesOffered
+        servicesOffered: resetServices,
     });
     setIsEditingBusiness(false);
     setError('');
+    setServiceRateErrors({}); // Clear errors on cancel
   };
 
   // Render loading state
@@ -473,22 +541,45 @@ function DashboardPage() {
           <div className={styles.infoBlock}>
             <h3>Services Offered</h3>
             {isEditingBusiness ? (
-              <div className={styles.checkboxGrid}>
-                {servicesOfferedOptions.map(service => (
-                  <label key={service} className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={(editBusinessData.servicesOffered || []).includes(service)}
-                      onChange={() => handleBusinessCheckboxChange('servicesOffered', service)}
-                    /> {service}
-                  </label>
-                ))}
+              <div className={styles.checkboxGridServices}> {/* Potentially a new class for layout if needed */}
+                {servicesOfferedOptions.map(serviceName => {
+                  const serviceData = (editBusinessData.servicesOffered || []).find(s => s.service === serviceName);
+                  const isChecked = !!serviceData;
+                  return (
+                    <div key={serviceName} className={styles.serviceRateItem}>
+                      <label className={styles.checkboxLabel}>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleBusinessCheckboxChange(serviceName)}
+                        /> {serviceName}
+                      </label>
+                      {isChecked && (
+                        <div className={styles.rateInputContainer}>
+                          <input
+                            type="number"
+                            placeholder="Hourly Rate"
+                            value={serviceData.rate || ''}
+                            onChange={(e) => handleServiceRateChange(serviceName, e.target.value)}
+                            className={`${styles.input} ${styles.rateInput}`}
+                            min="0"
+                          />
+                          {serviceRateErrors[serviceName] && <p className={styles.inlineError}>{serviceRateErrors[serviceName]}</p>}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               profileData.servicesOffered?.length > 0 ? (
-                <ul>{profileData.servicesOffered.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                <ul>
+                  {profileData.servicesOffered.map((s, i) => (
+                    <li key={i}>{s.service}: {s.rate !== undefined && s.rate !== '' ? `$${s.rate}/hr` : <em className={styles.emptyField}>No rate set</em>}</li>
+                  ))}
+                </ul>
               ) : (
-                <p><em className={styles.emptyField}>empty</em></p>
+                <p><em className={styles.emptyField}>No services listed.</em></p>
               )
             )}
           </div>

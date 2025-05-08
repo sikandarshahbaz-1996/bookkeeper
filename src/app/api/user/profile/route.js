@@ -98,20 +98,29 @@ export async function PUT(request) {
     }
     // Add more specific validation as needed for arrays, phone number format etc.
     // Example: Ensure arrays are actually arrays if provided
-    const arrayFields = ['qualifications', 'experience', 'areasOfExpertise', 'languagesSpoken', 'softwareProficiency', 'servicesOffered']; // Add servicesOffered
+    const arrayFields = ['qualifications', 'experience', 'areasOfExpertise', 'languagesSpoken', 'softwareProficiency'];
     arrayFields.forEach(key => {
         if (allowedUpdates[key] !== undefined && !Array.isArray(allowedUpdates[key])) {
-            // If it's not an array but was provided, treat as an attempt to clear or malformed data.
-            // Depending on strictness, either delete or set to empty array, or return error.
-            // For now, let's ensure it's an array if it exists.
-            // If it's meant to be cleared and comes as undefined, it will be handled by the undefined check.
-            // If it comes as non-array, it's an error or should be sanitized.
-            // For simplicity, if it's not an array, we'll log a warning and remove it.
-            // A more robust solution might return a 400 error.
             console.warn(`Invalid non-array data provided for ${key}. Field will be ignored.`);
             delete allowedUpdates[key];
         }
     });
+
+    // Validate servicesOffered structure
+    if (allowedUpdates.servicesOffered !== undefined) {
+        if (!Array.isArray(allowedUpdates.servicesOffered)) {
+            console.warn(`Invalid non-array data provided for servicesOffered. Field will be ignored.`);
+            delete allowedUpdates.servicesOffered;
+        } else {
+            // Ensure each item in servicesOffered is an object with service (string) and rate (number)
+            allowedUpdates.servicesOffered = allowedUpdates.servicesOffered.filter(item => 
+                item && typeof item.service === 'string' && item.service.trim() !== '' &&
+                typeof item.rate === 'number' && !isNaN(item.rate) && item.rate >= 0
+            );
+            // If after filtering, the array is empty, and it was provided, maybe keep it as empty or remove
+            // For now, if it becomes empty after filtering valid items, it will be saved as an empty array.
+        }
+    }
 
 
     if (Object.keys(allowedUpdates).length === 0) {

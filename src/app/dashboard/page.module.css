@@ -242,6 +242,40 @@
   color: #777; /* A slightly lighter color for empty fields */
 }
 
+/* Styles for Services Offered with Rates */
+.checkboxGridServices { /* Using existing checkboxGrid for now, can be customized if needed */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Adjust minmax for more space if needed */
+  gap: 15px 20px; /* Increased gap for clarity */
+  margin-top: 10px;
+}
+
+.serviceRateItem {
+  display: flex;
+  flex-direction: column; /* Stack checkbox/label and rate input */
+  gap: 8px; /* Space between checkbox and rate input */
+}
+
+.rateInputContainer {
+  display: flex;
+  flex-direction: column; /* Stack input and error message */
+  margin-left: 28px; /* Indent rate input under checkbox (approx checkbox width + margin) */
+  gap: 4px;
+}
+
+.rateInput {
+  padding: 6px 10px; /* Slightly smaller padding for rate input */
+  font-size: 14px;
+  max-width: 150px; /* Limit width of rate input */
+}
+
+.inlineError {
+  font-size: 12px;
+  color: #dc3545 !important; /* Red for errors */
+  margin-top: 2px; /* Small space above error message */
+}
+
+
 /* Tab Styles */
 .tabs {
   display: flex;
