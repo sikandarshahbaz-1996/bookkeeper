@@ -30,6 +30,17 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Invalid credentials. User not found.' }, { status: 401 });
     }
 
+    // *** Add check for verification status ***
+    if (!user.isVerified) {
+        // Optionally trigger a resend here, or just inform the user
+        return NextResponse.json({ 
+            message: 'Account not verified. Please check your email for the verification code.',
+            // Add a flag to indicate verification is needed on the frontend
+            verificationRequired: true, 
+            email: user.email // Send email back for potential resend action
+        }, { status: 403 }); // 403 Forbidden
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {

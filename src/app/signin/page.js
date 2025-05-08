@@ -16,6 +16,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showResendLink, setShowResendLink] = useState(false); // State for resend link
 
   useEffect(() => {
     const proParam = searchParams.get('pro');
@@ -65,6 +66,21 @@ export default function SignInPage() {
 
     } catch (err) {
       setError(err.message);
+      // Check if the error indicates verification is required
+      // This relies on the API returning a specific structure or message
+      // For now, we check the message content, which is brittle.
+      // A better way is a specific error code or the verificationRequired flag.
+      // Let's assume the API sends back { verificationRequired: true, email: '...' } in the error data
+      // We need to parse the response even on error to check this flag.
+      
+      // Re-fetch or parse error response data if possible (fetch API doesn't easily expose error body)
+      // A common pattern is to check response.status first
+      if (err.message.includes('Account not verified')) { // Simple check based on message
+          setShowResendLink(true);
+      } else {
+          setShowResendLink(false);
+      }
+
     } finally {
       setLoading(false);
     }
@@ -119,6 +135,14 @@ export default function SignInPage() {
               Forgot Password?
             </Link>
           </div>
+          {/* Conditionally render Resend Verification link */}
+          {showResendLink && (
+            <div className={styles.resendVerificationContainer}>
+              <Link href={`/verify-email?email=${encodeURIComponent(email)}`} className={styles.resendLink}>
+                Resend Verification Code
+              </Link>
+            </div>
+          )}
           <button type="submit" className={styles.signInButton} disabled={loading}>
             {loading ? 'Signing In...' : 'Sign In'}
           </button>

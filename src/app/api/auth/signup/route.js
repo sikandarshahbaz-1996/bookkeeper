@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs'; // Corrected import
-import { getCollection } from '@/lib/mongodb'; // Assuming @ refers to src
+import bcrypt from 'bcryptjs';
+import { getCollection } from '@/lib/mongodb';
+import { sendVerificationEmail } from '@/lib/nodemailer'; // Import email utility
+import crypto from 'crypto'; // For generating random code
 
 export async function POST(request) {
   try {
@@ -22,39 +24,70 @@ export async function POST(request) {
     // Check if user already exists
     const existingUser = await usersCollection.findOne({ email });
     if (existingUser) {
-      return NextResponse.json({ message: 'User with this email already exists.' }, { status: 409 }); // 409 Conflict
+      // If user exists but is not verified, allow signup process to proceed to resend code
+      if (existingUser && existingUser.isVerified) {
+        return NextResponse.json({ message: 'User with this email already exists and is verified.' }, { status: 409 });
+      }
+      // If user exists but is not verified, we'll overwrite their verification code later.
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10); // Salt rounds: 10
+    // Generate verification code and expiry
+    const verificationCode = crypto.randomInt(100000, 999999).toString(); // 6 digits
+    const verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+    const hashedVerificationCode = await bcrypt.hash(verificationCode, 10); // Hash the code
 
-    const newUser = {
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Prepare user data
+    const userData = {
       name,
       email,
       password: hashedPassword,
-      role, // 'customer' or 'professional'
-      createdAt: new Date(),
+      role,
+      isVerified: false, // Start as not verified
+      verificationCode: hashedVerificationCode, // Store hashed code
+      verificationCodeExpires,
+      createdAt: existingUser ? existingUser.createdAt : new Date(), // Keep original creation date if user existed
+      updatedAt: new Date(),
     };
 
     // Add professional-specific fields if the role is 'professional'
     if (role === 'professional') {
-      newUser.phoneNumber = phoneNumber || ''; // Optional
-      newUser.qualifications = qualifications || [];
-      newUser.experience = experience || [];
-      newUser.areasOfExpertise = areasOfExpertise || [];
-      newUser.languagesSpoken = languagesSpoken || [];
-      newUser.softwareProficiency = softwareProficiency || [];
+        userData.phoneNumber = phoneNumber || '';
+        userData.qualifications = qualifications || [];
+        userData.experience = experience || [];
+        userData.areasOfExpertise = areasOfExpertise || [];
+        userData.languagesSpoken = languagesSpoken || [];
+        userData.softwareProficiency = softwareProficiency || [];
     }
-    
-    const result = await usersCollection.insertOne(newUser);
 
-    if (result.insertedId) {
-      // Don't send back the password, even hashed, in the response
-      const userResponse = { ...newUser };
-      delete userResponse.password;
-      return NextResponse.json({ message: 'User created successfully.', user: userResponse }, { status: 201 });
+    // Use updateOne with upsert to handle both new users and existing unverified users
+    const result = await usersCollection.updateOne(
+        { email: email }, // Filter by email
+        { $set: userData }, // Set the new data
+        { upsert: true } // Create if doesn't exist, update if does
+    );
+
+    if (result.acknowledged) {
+        // Send verification email
+        const emailResult = await sendVerificationEmail(email, verificationCode); // Send the plain code
+
+        if (!emailResult.success) {
+            // Log error but proceed, user can request resend later
+            console.error(`Failed to send verification email to ${email}: ${emailResult.error}`);
+            // Optionally return a specific error, but maybe let signup succeed and prompt user
+        }
+
+        // Return success, prompting user to verify
+        return NextResponse.json({ 
+            message: 'Signup successful! Please check your email for a verification code.',
+            // Optionally send back email for the verification page
+            email: email 
+        }, { status: 201 });
+
     } else {
-      return NextResponse.json({ message: 'Failed to create user.' }, { status: 500 });
+        return NextResponse.json({ message: 'Failed to create or update user.' }, { status: 500 });
     }
 
   } catch (error) {

@@ -46,9 +46,9 @@ export default function SignUpUserPage() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Handle success
-      alert('Account created successfully! Please sign in.');
-      router.push('/signin?user=true'); // Redirect to sign-in page for users
+      // Handle success - redirect to verification page
+      // alert('Account created successfully! Please sign in.'); // Old message
+      router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`); 
 
     } catch (err) {
       setError(err.message);

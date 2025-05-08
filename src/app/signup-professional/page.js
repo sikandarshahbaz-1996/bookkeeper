@@ -114,9 +114,9 @@ export default function SignUpProfessionalPage() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Handle success
-      alert('Professional account created successfully! Please sign in.');
-      router.push('/signin?pro=true'); // Redirect to sign-in page for professionals
+      // Handle success - redirect to verification page
+      // alert('Professional account created successfully! Please sign in.'); // Old message
+      router.push(`/verify-email?email=${encodeURIComponent(payload.email)}`); 
 
     } catch (err) {
       setError(err.message);
