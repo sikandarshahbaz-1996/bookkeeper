@@ -1,28 +1,20 @@
 .container {
-  padding: 40px;
-  max-width: 1000px;
-  margin: 0 auto;
-  background-color: #f8f9fa; /* Light background for content area */
-  border-radius: 8px; /* Restored */
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* Restored */
-  min-height: calc(100vh - 70px - 80px); /* Restored original calculation */
-  /* box-sizing: border-box; */ /* Can likely remove this now */
+  padding: 40px; /* Keep padding for overall page spacing */
+  /* Removed card styles: max-width, margin, background-color, border-radius, box-shadow */
+  min-height: calc(100vh - 70px); /* Adjust min-height if needed, minus navbar */
+  box-sizing: border-box; 
 }
 
-.title {
-  font-size: 28px;
-  color: #333;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-}
+/* .title style removed as h1 was removed */
 
 .profileSection {
+  /* This is the main content card */
   background-color: #fff;
-  padding: 30px 40px; /* Increased padding */
+  padding: 30px 40px; 
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  margin-top: 20px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1); /* Slightly stronger shadow */
+  margin: 0 auto; /* Center the card horizontally, remove top margin */
+  max-width: 800px; /* Set max width for the info card */
 }
 
 .profileHeader {
@@ -216,4 +208,72 @@
   margin-top: 20px;
   font-size: 15px;
   text-align: center;
+}
+
+/* Add media queries for responsiveness */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px; /* Reduce padding */
+  }
+  .profileSection {
+    padding: 20px 25px; /* Reduce padding */
+    max-width: 95%; /* Allow card to be wider */
+  }
+  .profileHeader {
+    flex-direction: column; /* Stack header items */
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .editActions {
+    width: 100%; /* Make buttons take full width */
+    justify-content: flex-start; /* Align buttons start */
+    margin-top: 10px;
+  }
+  .infoBlock strong {
+    min-width: 100px; /* Adjust label width */
+  }
+  .formRow {
+    flex-direction: column; /* Stack label and input */
+    align-items: flex-start;
+    gap: 5px;
+  }
+   .formRow .input {
+    max-width: 100%; /* Allow input full width */
+  }
+  .checkboxGrid {
+     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Adjust checkbox grid */
+  }
+}
+
+@media (max-width: 480px) {
+   .container {
+    padding: 15px;
+  }
+   .profileSection {
+    padding: 15px 20px;
+  }
+   .profileHeader h2 {
+    font-size: 20px;
+  }
+  .infoBlock h3 {
+    font-size: 17px;
+  }
+   .infoBlock p, .infoBlock li, .infoBlock span {
+    font-size: 14px;
+  }
+  .checkboxGrid {
+     grid-template-columns: 1fr; /* Stack checkboxes */
+  }
+   .editButton, .saveButton, .cancelButton {
+    font-size: 14px;
+    padding: 8px 15px;
+  }
+  .infoBlock strong {
+    min-width: auto; /* Remove min-width */
+    display: block; /* Make label block */
+    margin-bottom: 3px;
+  }
+  .infoBlock p, .infoBlock span {
+     margin-left: 0; /* Align text with label */
+  }
 }

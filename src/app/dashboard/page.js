@@ -169,7 +169,7 @@ function DashboardPage() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Dashboard</h1>
+      {/* <h1 className={styles.title}>Dashboard</h1> Removed */}
       
       <div className={styles.profileSection}>
         <div className={styles.profileHeader}>
@@ -193,9 +193,15 @@ function DashboardPage() {
         {/* Display basic info */}
         <div className={styles.infoBlock}>
           <h3>Basic Information</h3>
-          <p><strong>Email:</strong> {profileData.email}</p> {/* Email not editable */}
-          <p><strong>Role:</strong> {profileData.role}</p> {/* Role not editable */}
-          
+          {/* Use formRow structure for consistency */}
+          <div className={styles.formRow}>
+             <label><strong>Email:</strong></label>
+             <span>{profileData.email}</span>
+          </div>
+           <div className={styles.formRow}>
+             <label><strong>Role:</strong></label>
+             <span>{profileData.role}</span>
+          </div>
           <div className={styles.formRow}>
             <label htmlFor="name"><strong>Name:</strong></label>
             {isEditing ? (
