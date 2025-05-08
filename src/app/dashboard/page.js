@@ -5,6 +5,7 @@ import styles from './page.module.css';
 import { useAuth } from '@/context/AuthContext';
 import withAuth from '@/components/withAuth';
 import { toast } from 'react-toastify';
+// Removed all date-fns and date-fns-tz imports
 
 // Re-use placeholder data for options if needed for editing (e.g., checkboxes)
 // Ideally, fetch these from a config or API
@@ -33,6 +34,107 @@ const servicesOfferedOptions = [
   "Budgeting & Forecasting", "Cash Flow Management", "IRS Representation", "Startup Advisory"
 ];
 
+const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+// Generate time options (e.g., 00:00, 00:30, ..., 23:30)
+const timeOptions = [];
+for (let h = 0; h < 24; h++) {
+  for (let m = 0; m < 60; m += 30) {
+    timeOptions.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+  }
+}
+
+// Get timezones using Intl API
+let commonTimeZones = [];
+try {
+  // Intl.supportedValuesOf('timeZone') returns all IANA timezones supported by the runtime
+  const allTimeZones = Intl.supportedValuesOf('timeZone');
+  // Filter for common ones if desired (optional)
+  commonTimeZones = allTimeZones.filter(tz =>
+    tz.startsWith('America/') || tz.startsWith('Europe/') || tz.startsWith('Asia/') || tz.startsWith('Australia/') || tz === 'UTC' || tz === 'Etc/UTC'
+  );
+  // Sort alphabetically
+  commonTimeZones.sort();
+} catch (e) {
+  console.error("Failed to get timezones using Intl API:", e);
+  // Provide a basic fallback list
+  commonTimeZones = ['UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris'];
+}
+
+
+// Helper to convert local HH:mm time string in a given timezone to UTC HH:mm string
+const convertToUTCHHMm = (timeString, timezone) => {
+  if (!timeString || !timezone) return null;
+  try {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    // Create a date object representing today in the target timezone with the specified time
+    const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: 'numeric', day: 'numeric' });
+    const parts = formatter.formatToParts(new Date());
+    const year = parts.find(p => p.type === 'year').value;
+    const month = parts.find(p => p.type === 'month').value - 1; // Month is 0-indexed
+    const day = parts.find(p => p.type === 'day').value;
+
+    const localDate = new Date(year, month, day, hours, minutes);
+
+    // Format this date into UTC HH:mm
+    const utcFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'UTC',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false, // Use 24-hour format
+    });
+    const formattedUtcTime = utcFormatter.format(localDate); // e.g., "14:30"
+    // Ensure HH:mm format if locale gives something slightly different (though unlikely for en-CA)
+     const [utcHours, utcMinutes] = formattedUtcTime.split(':');
+     return `${utcHours.padStart(2, '0')}:${utcMinutes.padStart(2, '0')}`;
+  } catch (error) {
+    console.error("Error converting to UTC HH:mm:", error);
+    return null;
+  }
+};
+
+// Helper to convert UTC HH:mm string to local HH:mm string in a given timezone
+const convertFromUTCHHMm = (utcTimeString, timezone) => {
+  if (!utcTimeString || !timezone) return null;
+  try {
+    const [hours, minutes] = utcTimeString.split(':').map(Number);
+    // Create a date object representing today UTC with the specified time
+    const today = new Date();
+    const utcDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), hours, minutes));
+
+    // Format this date into local HH:mm in the target timezone
+    const localFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false, // Use 24-hour format
+    });
+     const formattedLocalTime = localFormatter.format(utcDate);
+     const [localHours, localMinutes] = formattedLocalTime.split(':');
+     return `${localHours.padStart(2, '0')}:${localMinutes.padStart(2, '0')}`;
+  } catch (error) {
+    console.error("Error converting from UTC HH:mm:", error);
+    return null;
+  }
+};
+
+// Helper to format HH:mm time string into AM/PM format
+const formatToAmPm = (timeString) => {
+    if (!timeString) return 'N/A';
+    try {
+        const [hours, minutes] = timeString.split(':');
+        const hourNum = parseInt(hours);
+        const minNum = parseInt(minutes);
+        const date = new Date(); // Use any date
+        date.setHours(hourNum, minNum, 0, 0);
+        // Use en-US locale for standard AM/PM format
+        return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(date);
+    } catch (error) {
+        console.error("Error formatting time to AM/PM:", error);
+        return 'Invalid Time';
+    }
+};
+
 
 function DashboardPage() {
   const { token, logout, user: authUser } = useAuth(); // Get authUser for initial state if needed
@@ -40,7 +142,20 @@ function DashboardPage() {
   const [profileData, setProfileData] = useState(null);
   const [editData, setEditData] = useState(null); // State for profile form data while editing
   const [isEditing, setIsEditing] = useState(false); // For profile editing
-  const [editBusinessData, setEditBusinessData] = useState(null); // State for business form data
+  const [editBusinessData, setEditBusinessData] = useState({ // Initialize with default structure
+    businessName: '',
+    businessAddress: '',
+    businessPhone: '',
+    businessEmail: '',
+    servicesOffered: [],
+    timezone: 'America/New_York', // Default timezone
+    availability: daysOfWeek.map(day => ({
+      day,
+      isAvailable: !['Saturday', 'Sunday'].includes(day),
+      startTime: "09:00",
+      endTime: "17:00",
+    }))
+  });
   const [isEditingBusiness, setIsEditingBusiness] = useState(false); // For business info editing
   const [isLoading, setIsLoading] = useState(true); // Loading profile initially
   const [isSaving, setIsSaving] = useState(false); // Saving state (can be used for both profile and business)
@@ -66,11 +181,39 @@ function DashboardPage() {
       if (!response.ok) throw new Error(data.message || 'Failed to fetch profile data.');
       setProfileData(data.user);
       setEditData(data.user); // Initialize profile edit form data
-      // Initialize business edit form data - assuming business fields might be nested or top-level
-      // Ensure servicesOffered is an array of objects { service: string, rate: number/string }
+
+      // Initialize business edit form data from fetched data or defaults
+      const userTimezone = data.user.timezone || 'America/New_York';
       const initialServices = Array.isArray(data.user.servicesOffered)
-        ? data.user.servicesOffered.map(s => typeof s === 'string' ? { service: s, rate: '' } : s)
+        ? data.user.servicesOffered.map(s => typeof s === 'string' ? { service: s, rate: '' } : ({ ...s, rate: s.rate !== undefined ? String(s.rate) : '' }))
         : [];
+      let initialAvailability = data.user.availability && Array.isArray(data.user.availability) && data.user.availability.length === 7 // Ensure valid structure
+        ? data.user.availability.map(day => ({
+            ...day,
+            // Convert stored UTC HH:mm back to local HH:mm for the dropdowns
+            startTime: day.isAvailable && day.startTime ? convertFromUTCHHMm(day.startTime, userTimezone) : "09:00",
+            endTime: day.isAvailable && day.endTime ? convertFromUTCHHMm(day.endTime, userTimezone) : "17:00",
+          }))
+        : daysOfWeek.map(day => ({ // Default if not present or invalid
+            day,
+            isAvailable: !['Saturday', 'Sunday'].includes(day),
+            startTime: "09:00",
+            endTime: "17:00",
+          }));
+
+      // Ensure all days are present if fetched data was incomplete (though API validation should prevent this)
+      if (initialAvailability.length !== 7) {
+           initialAvailability = daysOfWeek.map(day => {
+               const existing = initialAvailability.find(d => d.day === day);
+               return existing || {
+                   day,
+                   isAvailable: !['Saturday', 'Sunday'].includes(day),
+                   startTime: "09:00",
+                   endTime: "17:00",
+               };
+           });
+      }
+
 
       setEditBusinessData({
         businessName: data.user.businessName || '',
@@ -78,11 +221,28 @@ function DashboardPage() {
         businessPhone: data.user.businessPhone || '',
         businessEmail: data.user.businessEmail || '',
         servicesOffered: initialServices,
+        timezone: userTimezone,
+        availability: initialAvailability,
       });
     } catch (err) {
       setError(err.message);
       toast.error(`Error fetching profile: ${err.message}`);
       if (err.message.includes('Invalid or expired token')) logout();
+       // Set default business data even on error to prevent render issues
+       setEditBusinessData({
+         businessName: '',
+         businessAddress: '',
+         businessPhone: '',
+         businessEmail: '',
+         servicesOffered: [],
+         timezone: 'America/New_York',
+         availability: daysOfWeek.map(day => ({
+           day,
+           isAvailable: !['Saturday', 'Sunday'].includes(day),
+           startTime: "09:00",
+           endTime: "17:00",
+         }))
+       });
     } finally {
       setIsLoading(false);
     }
@@ -107,7 +267,7 @@ function DashboardPage() {
       return { ...prev, [listName]: newList };
     });
   };
-  
+
   // Handlers for dynamic list editing (Qualifications, Experience)
   const handleEditDynamicListChange = (listName, index, value) => {
     setEditData(prev => {
@@ -137,7 +297,7 @@ function DashboardPage() {
     if (!token || !editData) return;
     setIsSaving(true);
     setError('');
-    
+
     // Filter out empty strings from dynamic lists before saving
     const payload = {
         ...editData,
@@ -145,12 +305,21 @@ function DashboardPage() {
         experience: editData.experience?.filter(exp => exp.trim() !== '') || [],
     };
     // Remove fields that shouldn't be sent in PUT (like _id, email, role etc.)
-    delete payload._id; 
-    delete payload.email; 
-    delete payload.role; 
-    delete payload.createdAt; 
-    delete payload.updatedAt; 
-    delete payload.isVerified; 
+    delete payload._id;
+    delete payload.email;
+    delete payload.role;
+    delete payload.createdAt;
+    delete payload.updatedAt;
+    delete payload.isVerified;
+    // Also remove business data from profile save payload
+    delete payload.businessName;
+    delete payload.businessAddress;
+    delete payload.businessPhone;
+    delete payload.businessEmail;
+    delete payload.servicesOffered;
+    delete payload.timezone;
+    delete payload.availability;
+
 
     try {
       const response = await fetch('/api/user/profile', {
@@ -163,7 +332,7 @@ function DashboardPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to update profile.');
-      
+
       setProfileData(data.user); // Update displayed data
       setEditData(data.user);   // Reset edit data to saved state
       setIsEditing(false);      // Exit edit mode
@@ -250,38 +419,56 @@ function DashboardPage() {
     setIsSaving(true);
     setError('');
 
-    // Prepare payload, ensuring rates are numbers
+    // Prepare payload, ensuring rates are numbers and times are UTC
     const businessPayload = {
-      ...editBusinessData,
+      businessName: editBusinessData.businessName,
+      businessAddress: editBusinessData.businessAddress,
+      businessPhone: editBusinessData.businessPhone,
+      businessEmail: editBusinessData.businessEmail,
       servicesOffered: (editBusinessData.servicesOffered || []).map(s => ({
         ...s,
-        rate: parseFloat(s.rate) // Ensure rate is a number
+        rate: parseFloat(s.rate)
       })),
+      availability: (editBusinessData.availability || []).map(day => ({
+        ...day,
+        // Convert local HH:mm to UTC HH:mm for storage
+        startTime: day.isAvailable ? convertToUTCHHMm(day.startTime, editBusinessData.timezone) : null,
+        endTime: day.isAvailable ? convertToUTCHHMm(day.endTime, editBusinessData.timezone) : null,
+      })),
+      timezone: editBusinessData.timezone,
     };
 
     try {
+      // Use the same profile update endpoint, the backend filters allowed fields
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(businessPayload), // Send only business-related data
+        body: JSON.stringify(businessPayload),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to update business information.');
 
-      // API should return the updated user object, which includes business info
-      setProfileData(data.user); 
-      // Update editBusinessData to reflect the saved state from the potentially modified data.user
-      // Ensure servicesOffered from API is correctly structured for the state
+      // API returns the updated user object
+      setProfileData(data.user);
+      // Update editBusinessData to reflect the saved state
+      const savedTimezone = data.user.timezone || editBusinessData.timezone;
       const updatedServicesFromAPI = Array.isArray(data.user.servicesOffered)
         ? data.user.servicesOffered.map(s => ({
             service: s.service,
-            // Ensure rate is a string for the input field, or handle as needed
             rate: s.rate !== undefined && s.rate !== null ? String(s.rate) : '',
           }))
         : [];
+      const savedAvailability = Array.isArray(data.user.availability)
+        ? data.user.availability.map(day => ({
+            ...day,
+            // Convert stored UTC HH:mm back to local HH:mm for display
+            startTime: day.isAvailable && day.startTime ? convertFromUTCHHMm(day.startTime, savedTimezone) : "09:00",
+            endTime: day.isAvailable && day.endTime ? convertFromUTCHHMm(day.endTime, savedTimezone) : "17:00",
+          }))
+        : editBusinessData.availability; // Fallback
 
       setEditBusinessData({
         businessName: data.user.businessName || '',
@@ -289,6 +476,8 @@ function DashboardPage() {
         businessPhone: data.user.businessPhone || '',
         businessEmail: data.user.businessEmail || '',
         servicesOffered: updatedServicesFromAPI,
+        timezone: savedTimezone,
+        availability: savedAvailability,
       });
       setIsEditingBusiness(false);
       setServiceRateErrors({}); // Clear errors on successful save
@@ -304,27 +493,69 @@ function DashboardPage() {
 
   const handleCancelBusinessEdit = () => {
     // Reset business edit form data to original or last saved business data from profileData
-    const resetServices = Array.isArray(profileData.servicesOffered)
+    const currentProfileTimezone = profileData?.timezone || 'America/New_York';
+    const resetServices = Array.isArray(profileData?.servicesOffered)
         ? profileData.servicesOffered.map(s => typeof s === 'string' ? { service: s, rate: '' } : ({ ...s, rate: s.rate !== undefined && s.rate !== null ? String(s.rate) : '' }))
         : [];
+    const resetAvailability = Array.isArray(profileData?.availability)
+        ? profileData.availability.map(day => ({
+            ...day,
+            startTime: day.isAvailable && day.startTime ? convertFromUTCHHMm(day.startTime, currentProfileTimezone) : "09:00",
+            endTime: day.isAvailable && day.endTime ? convertFromUTCHHMm(day.endTime, currentProfileTimezone) : "17:00",
+          }))
+        : daysOfWeek.map(day => ({ // Default if not in profileData
+            day,
+            isAvailable: !['Saturday', 'Sunday'].includes(day),
+            startTime: "09:00",
+            endTime: "17:00",
+          }));
+
     setEditBusinessData({
-        businessName: profileData.businessName || '',
-        businessAddress: profileData.businessAddress || '',
-        businessPhone: profileData.businessPhone || '',
-        businessEmail: profileData.businessEmail || '',
+        businessName: profileData?.businessName || '',
+        businessAddress: profileData?.businessAddress || '',
+        businessPhone: profileData?.businessPhone || '',
+        businessEmail: profileData?.businessEmail || '',
         servicesOffered: resetServices,
+        timezone: currentProfileTimezone,
+        availability: resetAvailability,
     });
     setIsEditingBusiness(false);
     setError('');
     setServiceRateErrors({}); // Clear errors on cancel
   };
 
+  const handleTimezoneChange = (e) => {
+    const newTimezone = e.target.value;
+    setEditBusinessData(prev => ({ ...prev, timezone: newTimezone }));
+    // Note: We are not converting existing times on timezone change for simplicity.
+    // User would need to re-verify/adjust times if they change timezone mid-edit.
+  };
+
+  const handleDayAvailabilityToggle = (dayName) => {
+    setEditBusinessData(prev => ({
+      ...prev,
+      availability: prev.availability.map(day =>
+        day.day === dayName ? { ...day, isAvailable: !day.isAvailable } : day
+      ),
+    }));
+  };
+
+  const handleTimeChange = (dayName, timeType, value) => {
+    setEditBusinessData(prev => ({
+      ...prev,
+      availability: prev.availability.map(day =>
+        day.day === dayName ? { ...day, [timeType]: value } : day
+      ),
+    }));
+  };
+
+
   // Render loading state
-  if (isLoading) return <div className={styles.container}><p>Loading dashboard...</p></div>;
+  if (isLoading || !editBusinessData) return <div className={styles.container}><p>Loading dashboard...</p></div>; // Check editBusinessData too
   // Render error state (only if profileData is null after loading)
   if (!profileData && !isLoading) return <div className={styles.container}><p className={styles.errorMessage}>Error: {error || 'Could not load profile data.'}</p></div>;
-  // Ensure profileData exists before rendering main content
-  if (!profileData) return null; 
+  // Ensure profileData exists before rendering main content (though editBusinessData check above might suffice)
+  if (!profileData) return null;
 
   return (
     <div className={styles.container}>
@@ -484,7 +715,7 @@ function DashboardPage() {
           <div className={styles.profileHeader}>
             {/* Removed h2 "Business Information" */}
             {/* Empty div to push button to the right if no title, or adjust styling */}
-            <div></div> 
+            <div></div>
             {!isEditingBusiness ? (
                  <button className={styles.editButton} onClick={() => setIsEditingBusiness(true)}>
                     Edit Business Information
@@ -581,6 +812,80 @@ function DashboardPage() {
               ) : (
                 <p><em className={styles.emptyField}>No services listed.</em></p>
               )
+            )}
+          </div>
+
+          <div className={styles.infoBlock}>
+            <h3>Availability</h3>
+            {isEditingBusiness ? (
+              <>
+                <div className={styles.formRow}>
+                  <label htmlFor="timezone"><strong>Timezone:</strong></label>
+                  <select
+                    id="timezone"
+                    name="timezone"
+                    value={editBusinessData.timezone || 'America/New_York'}
+                    onChange={handleTimezoneChange}
+                    className={styles.input}
+                  >
+                    {commonTimeZones.map(tz => <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>)}
+                  </select>
+                </div>
+                {editBusinessData.availability && editBusinessData.availability.map((daySchedule, index) => (
+                  <div key={index} className={styles.dayAvailabilityRow}>
+                    <div className={styles.dayNameContainer}>
+                        <input
+                            type="checkbox"
+                            id={`available-${daySchedule.day}`}
+                            checked={daySchedule.isAvailable}
+                            onChange={() => handleDayAvailabilityToggle(daySchedule.day)}
+                            className={styles.availabilityToggle}
+                        />
+                        <label htmlFor={`available-${daySchedule.day}`} className={styles.dayLabel}>
+                            <strong>{daySchedule.day}</strong>
+                        </label>
+                    </div>
+                    {daySchedule.isAvailable ? (
+                      <div className={styles.timeSelectors}>
+                        <select
+                          value={daySchedule.startTime}
+                          onChange={(e) => handleTimeChange(daySchedule.day, 'startTime', e.target.value)}
+                          className={styles.input}
+                        >
+                          {timeOptions.map(time => <option key={`start-${time}`} value={time}>{formatToAmPm(time)}</option>)}
+                        </select>
+                        <span>to</span>
+                        <select
+                          value={daySchedule.endTime}
+                          onChange={(e) => handleTimeChange(daySchedule.day, 'endTime', e.target.value)}
+                          className={styles.input}
+                        >
+                          {timeOptions.map(time => <option key={`end-${time}`} value={time}>{formatToAmPm(time)}</option>)}
+                        </select>
+                      </div>
+                    ) : (
+                      <span className={styles.dayOffText}>Unavailable</span>
+                    )}
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                <div className={styles.formRow}>
+                    <label><strong>Timezone:</strong></label>
+                    <span>{profileData.timezone ? profileData.timezone.replace(/_/g, ' ') : <em className={styles.emptyField}>Not set</em>}</span>
+                </div>
+                <ul>
+                  {(profileData.availability || []).map((daySchedule, i) => (
+                    <li key={i}>
+                      <strong>{daySchedule.day}:</strong>{' '}
+                      {daySchedule.isAvailable
+                        ? `${daySchedule.startTime ? formatToAmPm(convertFromUTCHHMm(daySchedule.startTime, profileData.timezone)) : 'N/A'} - ${daySchedule.endTime ? formatToAmPm(convertFromUTCHHMm(daySchedule.endTime, profileData.timezone)) : 'N/A'}`
+                        : 'Unavailable'}
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </div>
           {/* Add more business-related info blocks as needed */}

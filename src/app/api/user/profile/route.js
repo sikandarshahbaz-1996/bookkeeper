@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { getCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb'; // Import ObjectId
+// Removed listTimeZones import
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -85,7 +86,9 @@ export async function PUT(request) {
             businessAddress: updateData.businessAddress,
             businessPhone: updateData.businessPhone,
             businessEmail: updateData.businessEmail,
-            servicesOffered: updateData.servicesOffered, // Add servicesOffered
+            servicesOffered: updateData.servicesOffered, 
+            timezone: updateData.timezone, // Add timezone
+            availability: updateData.availability, // Add availability
         }),
     };
 
@@ -112,13 +115,71 @@ export async function PUT(request) {
             console.warn(`Invalid non-array data provided for servicesOffered. Field will be ignored.`);
             delete allowedUpdates.servicesOffered;
         } else {
-            // Ensure each item in servicesOffered is an object with service (string) and rate (number)
             allowedUpdates.servicesOffered = allowedUpdates.servicesOffered.filter(item => 
                 item && typeof item.service === 'string' && item.service.trim() !== '' &&
                 typeof item.rate === 'number' && !isNaN(item.rate) && item.rate >= 0
             );
-            // If after filtering, the array is empty, and it was provided, maybe keep it as empty or remove
-            // For now, if it becomes empty after filtering valid items, it will be saved as an empty array.
+        }
+    }
+
+    // Validate timezone (basic check: must be a non-empty string)
+    // More robust validation could involve checking against a known list or regex,
+    // but relying on client sending valid IANA string from Intl API is often sufficient.
+    if (allowedUpdates.timezone !== undefined) {
+        if (typeof allowedUpdates.timezone !== 'string' || allowedUpdates.timezone.trim() === '') {
+            console.warn(`Invalid timezone provided: ${allowedUpdates.timezone}. Field will be ignored.`);
+            delete allowedUpdates.timezone;
+        } else {
+             // Optional: Trim whitespace
+             allowedUpdates.timezone = allowedUpdates.timezone.trim();
+        }
+    }
+
+    // Validate availability structure
+    const validTimeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // HH:mm format
+    const daysOfWeekConst = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+    if (allowedUpdates.availability !== undefined) {
+        if (!Array.isArray(allowedUpdates.availability) || allowedUpdates.availability.length !== 7) {
+            console.warn(`Invalid availability data structure or length. Field will be ignored.`);
+            delete allowedUpdates.availability;
+        } else {
+            allowedUpdates.availability = allowedUpdates.availability.map(daySchedule => {
+                if (!daySchedule || typeof daySchedule.day !== 'string' || !daysOfWeekConst.includes(daySchedule.day) || typeof daySchedule.isAvailable !== 'boolean') {
+                    return null; // Invalid entry
+                }
+                if (daySchedule.isAvailable) {
+                    if (daySchedule.startTime === null && daySchedule.endTime === null) { // If available but times are explicitly null (e.g. from toggle off then on without setting)
+                         // Keep them null, or set default? For now, keep as is, frontend should handle defaults if needed.
+                         // Or, if API requires times for available days, this item should be marked invalid.
+                         // For now, we assume null times are acceptable if isAvailable is true, meaning "available but times not set yet"
+                         // However, the frontend logic converts to UTC HH:mm or null. So if it's available, it should have times.
+                         // Let's enforce that if isAvailable is true, startTime and endTime must be valid UTC HH:mm strings.
+                         // The frontend sends null if not available, or UTC HH:mm if available.
+                         // So if isAvailable is true, startTime/endTime should not be null here from a valid client.
+                         // If they are null, it's a data integrity issue or client error.
+                         // For now, let's trust the client sends valid UTC HH:mm or null based on isAvailable.
+                    } else if (
+                        (daySchedule.startTime !== null && !validTimeRegex.test(daySchedule.startTime)) ||
+                        (daySchedule.endTime !== null && !validTimeRegex.test(daySchedule.endTime))
+                    ) {
+                        console.warn(`Invalid time format for ${daySchedule.day}. Times will be nulled.`);
+                        return { ...daySchedule, startTime: null, endTime: null }; // Or mark as invalid
+                    }
+                    // Further validation: endTime after startTime (complex with day rollovers if times are just HH:mm)
+                    // For simplicity, assuming times are within the same day and client ensures start < end.
+                } else {
+                    // If not available, ensure times are null (client should do this)
+                    daySchedule.startTime = null;
+                    daySchedule.endTime = null;
+                }
+                return daySchedule;
+            }).filter(Boolean); // Remove any null (invalid) entries
+
+            if (allowedUpdates.availability.length !== 7) { // Check again after filtering
+                 console.warn(`Availability data became invalid after filtering. Field will be ignored.`);
+                 delete allowedUpdates.availability;
+            }
         }
     }
 

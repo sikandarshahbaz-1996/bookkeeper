@@ -271,8 +271,92 @@
 
 .inlineError {
   font-size: 12px;
-  color: #dc3545 !important; /* Red for errors */
+  color: #dc3545; /* Red for errors */
   margin-top: 2px; /* Small space above error message */
+}
+
+/* Styles for Availability Section */
+.dayAvailabilityRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.dayAvailabilityRow:last-child {
+  border-bottom: none;
+}
+
+.dayNameContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-basis: 200px; /* Give it some base width */
+  flex-shrink: 0;
+}
+
+.availabilityToggle { /* Re-using checkbox styles, but can be customized */
+  /* Similar to .checkboxLabel input[type="checkbox"] but might need adjustments if not inside a label */
+  appearance: none; 
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #ffffff;
+  border: 1px solid #667eea;
+  border-radius: 3px; 
+  width: 18px; 
+  height: 18px;
+  cursor: pointer;
+  outline: none;
+  position: relative; /* For custom checkmark if needed */
+}
+.availabilityToggle:checked {
+  background-color: #667eea; 
+  border-color: #667eea;
+}
+.availabilityToggle:checked::after { /* Custom checkmark */
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+
+.dayLabel {
+  font-weight: normal; /* Override strong if it's inside a label with strong */
+  color: #333;
+  cursor: pointer; /* If clicking label toggles checkbox */
+}
+.dayLabel strong { /* If day name itself is wrapped in strong */
+    color: #333;
+    font-weight: 600; /* Make day name stand out a bit */
+}
+
+
+.timeSelectors {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.timeSelectors .input { /* For select elements if they use .input class */
+  max-width: 130px; /* Adjust width for time selects */
+  padding: 6px 8px;
+  font-size: 14px;
+}
+.timeSelectors span { /* For the "to" text */
+  color: #555;
+}
+
+.dayOffText {
+  color: #777;
+  font-style: italic;
+  flex-grow: 1;
+  text-align: right;
+  padding-right: 10px; /* Align with time selectors roughly */
 }
 
 
