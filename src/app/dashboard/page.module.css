@@ -237,6 +237,42 @@
   text-align: center;
 }
 
+.emptyField {
+  font-style: italic;
+  color: #777; /* A slightly lighter color for empty fields */
+}
+
+/* Tab Styles */
+.tabs {
+  display: flex;
+  justify-content: center; /* Center the tab buttons */
+  margin-bottom: 20px; /* Space between tabs and content */
+  border-bottom: none;
+}
+
+.tabButton {
+  padding: 10px 20px;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  font-size: 16px;
+  font-weight: 500;
+  color: #555;
+  transition: color 0.3s ease, border-bottom-color 0.3s ease;
+  border-bottom: 2px solid transparent; /* For active state indicator */
+  margin-right: 10px; /* Space between tab buttons */
+}
+
+.tabButton:hover {
+  color: #667eea;
+}
+
+.activeTab {
+  color: #667eea;
+  border-bottom-color: #667eea; /* Active tab indicator */
+}
+
+
 /* Add media queries for responsiveness */
 @media (max-width: 768px) {
   .container {

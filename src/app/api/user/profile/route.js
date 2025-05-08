@@ -80,6 +80,11 @@ export async function PUT(request) {
             areasOfExpertise: updateData.areasOfExpertise,
             languagesSpoken: updateData.languagesSpoken,
             softwareProficiency: updateData.softwareProficiency,
+            // Add business fields here
+            businessName: updateData.businessName,
+            businessAddress: updateData.businessAddress,
+            businessPhone: updateData.businessPhone,
+            businessEmail: updateData.businessEmail,
         }),
     };
 
@@ -92,7 +97,8 @@ export async function PUT(request) {
     }
     // Add more specific validation as needed for arrays, phone number format etc.
     // Example: Ensure arrays are actually arrays if provided
-    ['qualifications', 'experience', 'areasOfExpertise', 'languagesSpoken', 'softwareProficiency'].forEach(key => {
+    const arrayFields = ['qualifications', 'experience', 'areasOfExpertise', 'languagesSpoken', 'softwareProficiency'];
+    arrayFields.forEach(key => {
         if (allowedUpdates[key] !== undefined && !Array.isArray(allowedUpdates[key])) {
             delete allowedUpdates[key]; // Or return error
             console.warn(`Invalid non-array data provided for ${key}`);
