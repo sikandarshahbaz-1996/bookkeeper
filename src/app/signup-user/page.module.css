@@ -46,6 +46,40 @@
   text-align: left;
 }
 
+/* Styles for password input group */
+.passwordGroup {
+  position: relative; /* Needed for absolute positioning of the button */
+}
+
+.passwordInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInputWrapper .input {
+  padding-right: 60px; /* Add space for the button */
+}
+
+.togglePasswordButton {
+  position: absolute;
+  right: 1px; /* Position inside the input padding */
+  top: 1px;
+  bottom: 1px;
+  background-color: transparent;
+  border: none;
+  padding: 0 10px;
+  cursor: pointer;
+  color: #667eea;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.togglePasswordButton:hover {
+  text-decoration: underline;
+}
+
+
 .label {
   display: block;
   font-size: 14px;

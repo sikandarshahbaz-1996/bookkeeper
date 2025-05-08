@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
 import { useAuth } from '@/context/AuthContext'; // Import useAuth
+import { toast } from 'react-toastify'; // Import toast
 
 export default function SignInPage() {
   const searchParams = useSearchParams();
@@ -14,9 +15,10 @@ export default function SignInPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  // const [error, setError] = useState(''); // Replaced by toast
   const [loading, setLoading] = useState(false);
-  const [showResendLink, setShowResendLink] = useState(false); // State for resend link
+  const [showResendLink, setShowResendLink] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
   useEffect(() => {
     const proParam = searchParams.get('pro');
@@ -26,18 +28,20 @@ export default function SignInPage() {
     } else if (userParam !== null) {
       setActiveTab('user');
     }
-    // If neither param is present, it defaults to 'user' as set in useState
   }, [searchParams]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    setShowResendLink(false); // Hide resend link when changing tabs
+    // setError(''); // No longer needed
   };
 
   const signupLink = activeTab === 'user' ? "/signup-user" : "/signup-professional";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    // setError(''); // No longer needed
+    setShowResendLink(false); // Hide resend link on new submission
     setLoading(true);
 
     try {
@@ -46,41 +50,31 @@ export default function SignInPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        // Include the activeTab as intendedRole in the payload
         body: JSON.stringify({ email, password, intendedRole: activeTab }), 
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        // Check for verification required specifically
+        if (response.status === 403 && data.message.includes('Account not verified')) {
+            setShowResendLink(true);
+        } else {
+            setShowResendLink(false);
+        }
         throw new Error(data.message || 'Sign in failed. Please check your credentials.');
       }
 
       // Handle successful sign-in
       if (data.token && data.user) {
-        login(data.user, data.token); // Call context login function
-        // No need to manually set localStorage or redirect here, context handles it
+        login(data.user, data.token); 
       } else {
         throw new Error('Sign in failed. Invalid response from server.');
       }
 
     } catch (err) {
-      setError(err.message);
-      // Check if the error indicates verification is required
-      // This relies on the API returning a specific structure or message
-      // For now, we check the message content, which is brittle.
-      // A better way is a specific error code or the verificationRequired flag.
-      // Let's assume the API sends back { verificationRequired: true, email: '...' } in the error data
-      // We need to parse the response even on error to check this flag.
-      
-      // Re-fetch or parse error response data if possible (fetch API doesn't easily expose error body)
-      // A common pattern is to check response.status first
-      if (err.message.includes('Account not verified')) { // Simple check based on message
-          setShowResendLink(true);
-      } else {
-          setShowResendLink(false);
-      }
-
+      // setError(err.message); // Replaced by toast
+      toast.error(err.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -104,7 +98,7 @@ export default function SignInPage() {
           </button>
         </div>
         
-        {error && <p className={styles.errorMessage}>{error}</p>} {/* Added error message display */}
+        {/* Error messages are now handled by toast */}
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputGroup}>
             <label htmlFor="email" className={styles.label}>Email</label>
@@ -118,17 +112,26 @@ export default function SignInPage() {
               required 
             />
           </div>
-          <div className={styles.inputGroup}>
+          <div className={`${styles.inputGroup} ${styles.passwordGroup}`}> {/* Added passwordGroup class */}
             <label htmlFor="password" className={styles.label}>Password</label>
-            <input 
-              type="password" 
-              id="password" 
-              name="password" 
-              className={styles.input} 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required 
-            />
+            <div className={styles.passwordInputWrapper}> {/* Wrapper for input and button */}
+              <input 
+                type={showPassword ? 'text' : 'password'} 
+                id="password" 
+                name="password" 
+                className={styles.input} 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required 
+              />
+               <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)} 
+                className={styles.togglePasswordButton}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
           <div className={styles.forgotPasswordContainer}>
             <Link href="/forgot-password" className={styles.forgotPasswordLink}>

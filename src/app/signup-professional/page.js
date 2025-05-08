@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { toast } from 'react-toastify'; // Import toast
+import { toast } from 'react-toastify';
 import styles from './page.module.css';
 
 // Placeholder data (would ideally come from a config or API)
@@ -28,19 +28,37 @@ const softwareProficiencyOptions = [
   "FreeAgent", "SAP Business One", "Microsoft Dynamics 365"
 ];
 
+// Password validation function (same as user signup)
+const validatePassword = (password) => {
+  if (password.length < 6) {
+    return 'Password must be at least 6 characters long.';
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'Password must contain at least one uppercase letter.';
+  }
+  if (!/[a-z]/.test(password)) {
+    return 'Password must contain at least one lowercase letter.';
+  }
+  if (!/\d/.test(password)) {
+    return 'Password must contain at least one number.';
+  }
+  return null; // Password is valid
+};
+
+
 export default function SignUpProfessionalPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phoneNumber: '',
     password: '',
-    qualifications: [''], // Initial empty qualification
-    experience: [''],     // Initial empty experience
+    qualifications: [''], 
+    experience: [''],     
     areasOfExpertise: [],
     languagesSpoken: [],
     softwareProficiency: []
   });
-  // const [error, setError] = useState(''); // Replaced by toast
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -64,7 +82,7 @@ export default function SignUpProfessionalPage() {
 
   const removeDynamicListItem = (listName, index) => {
     const newList = [...formData[listName]];
-    if (newList.length > 1) { // Keep at least one item
+    if (newList.length > 1) { 
       newList.splice(index, 1);
       setFormData(prev => ({ ...prev, [listName]: newList }));
     }
@@ -83,12 +101,12 @@ export default function SignUpProfessionalPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // setError(''); // No longer needed
     setLoading(true);
 
-    if (formData.password.length < 6) {
-      // setError('Password must be at least 6 characters long.'); // Replaced by toast
-      toast.error('Password must be at least 6 characters long.');
+    // Validate password
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      toast.error(passwordError);
       setLoading(false);
       return;
     }
@@ -116,12 +134,10 @@ export default function SignUpProfessionalPage() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Handle success - show toast and redirect to verification page
       toast.info('Signup successful! Please check your email for a verification code.');
       router.push(`/verify-email?email=${encodeURIComponent(payload.email)}`); 
 
     } catch (err) {
-      // setError(err.message); // Replaced by toast
       toast.error(err.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
@@ -132,7 +148,6 @@ export default function SignUpProfessionalPage() {
     <div className={styles.container}>
       <div className={styles.formBox}>
         <h1 className={styles.title}>Professional Account Sign Up</h1>
-        {/* {error && <p className={styles.errorMessage}>{error}</p>} Removed error display */}
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* Basic Info */}
           <div className={styles.inputGroup}>
@@ -147,9 +162,26 @@ export default function SignUpProfessionalPage() {
             <label htmlFor="phoneNumber" className={styles.label}>Phone Number</label>
             <input type="tel" id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} className={styles.input} />
           </div>
-          <div className={styles.inputGroup}>
+          <div className={`${styles.inputGroup} ${styles.passwordGroup}`}> {/* Added passwordGroup class */}
             <label htmlFor="password" className={styles.label}>Password</label>
-            <input type="password" id="password" name="password" value={formData.password} onChange={handleInputChange} className={styles.input} required />
+             <div className={styles.passwordInputWrapper}> {/* Wrapper for input and button */}
+              <input 
+                type={showPassword ? 'text' : 'password'} 
+                id="password" 
+                name="password" 
+                value={formData.password} 
+                onChange={handleInputChange} 
+                className={styles.input} 
+                required 
+              />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)} 
+                className={styles.togglePasswordButton}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
 
           {/* Qualifications */}
