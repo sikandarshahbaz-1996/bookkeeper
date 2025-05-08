@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // For redirection
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify'; // Import toast
 import styles from './page.module.css';
 
 export default function SignUpUserPage() {
@@ -11,7 +12,7 @@ export default function SignUpUserPage() {
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
+  // const [error, setError] = useState(''); // Replaced by toast
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -22,11 +23,12 @@ export default function SignUpUserPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    // setError(''); // No longer needed
     setLoading(true);
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      // setError('Password must be at least 6 characters long.'); // Replaced by toast
+      toast.error('Password must be at least 6 characters long.');
       setLoading(false);
       return;
     }
@@ -46,12 +48,13 @@ export default function SignUpUserPage() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Handle success - redirect to verification page
-      // alert('Account created successfully! Please sign in.'); // Old message
+      // Handle success - show toast and redirect to verification page
+      toast.info('Signup successful! Please check your email for a verification code.');
       router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`); 
 
     } catch (err) {
-      setError(err.message);
+      // setError(err.message); // Replaced by toast
+      toast.error(err.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -61,7 +64,7 @@ export default function SignUpUserPage() {
     <div className={styles.container}>
       <div className={styles.formBox}>
         <h1 className={styles.title}>Create Your Account</h1>
-        {error && <p className={styles.errorMessage}>{error}</p>}
+        {/* {error && <p className={styles.errorMessage}>{error}</p>} Removed error display */}
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputGroup}>
             <label htmlFor="name" className={styles.label}>Full Name</label>

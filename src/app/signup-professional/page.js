@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // For redirection
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify'; // Import toast
 import styles from './page.module.css';
 
 // Placeholder data (would ideally come from a config or API)
@@ -39,7 +40,7 @@ export default function SignUpProfessionalPage() {
     languagesSpoken: [],
     softwareProficiency: []
   });
-  const [error, setError] = useState('');
+  // const [error, setError] = useState(''); // Replaced by toast
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -82,11 +83,12 @@ export default function SignUpProfessionalPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    // setError(''); // No longer needed
     setLoading(true);
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      // setError('Password must be at least 6 characters long.'); // Replaced by toast
+      toast.error('Password must be at least 6 characters long.');
       setLoading(false);
       return;
     }
@@ -114,12 +116,13 @@ export default function SignUpProfessionalPage() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Handle success - redirect to verification page
-      // alert('Professional account created successfully! Please sign in.'); // Old message
+      // Handle success - show toast and redirect to verification page
+      toast.info('Signup successful! Please check your email for a verification code.');
       router.push(`/verify-email?email=${encodeURIComponent(payload.email)}`); 
 
     } catch (err) {
-      setError(err.message);
+      // setError(err.message); // Replaced by toast
+      toast.error(err.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
@@ -129,7 +132,7 @@ export default function SignUpProfessionalPage() {
     <div className={styles.container}>
       <div className={styles.formBox}>
         <h1 className={styles.title}>Professional Account Sign Up</h1>
-        {error && <p className={styles.errorMessage}>{error}</p>} {/* Added error message display */}
+        {/* {error && <p className={styles.errorMessage}>{error}</p>} Removed error display */}
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* Basic Info */}
           <div className={styles.inputGroup}>

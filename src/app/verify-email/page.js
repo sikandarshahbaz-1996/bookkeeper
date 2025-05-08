@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link'; // Import Link
+import Link from 'next/link';
+import { toast } from 'react-toastify'; // Import toast
 import styles from './page.module.css';
 
 export default function VerifyEmailPage() {
@@ -10,8 +11,8 @@ export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  // const [error, setError] = useState(''); // Replaced by toast
+  // const [message, setMessage] = useState(''); // Replaced by toast
   const [loading, setLoading] = useState(false);
   const [resendDisabled, setResendDisabled] = useState(false);
   const [countdown, setCountdown] = useState(0);
@@ -21,13 +22,33 @@ export default function VerifyEmailPage() {
     const emailFromQuery = searchParams.get('email');
     if (emailFromQuery) {
       setEmail(emailFromQuery);
-      setMessage(`Enter the 6-digit code sent to ${emailFromQuery}`);
+      // setMessage(`Enter the 6-digit code sent to ${emailFromQuery}`); // Replaced by toast
+      toast.info(`Enter the 6-digit code sent to ${emailFromQuery}`, { autoClose: false }); // Persist info message
     } else {
-      // Optional: redirect if email is missing, or show an error
-      // setError('Email parameter is missing. Cannot verify.');
-      setMessage('Enter the 6-digit code sent to your email.');
+      // setError('Email parameter is missing. Cannot verify.'); // Replaced by toast
+      toast.error('Email parameter is missing. Cannot verify.');
+      // setMessage('Enter the 6-digit code sent to your email.');
     }
   }, [searchParams]);
+
+  // Clear countdown timer on unmount
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+        timer = setInterval(() => {
+            setCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    setResendDisabled(false); // Re-enable button
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    }
+    return () => clearInterval(timer); // Cleanup interval on component unmount
+  }, [countdown]);
+
 
   const handleCodeChange = (e) => {
     // Allow only digits and limit length
@@ -39,23 +60,25 @@ export default function VerifyEmailPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
+    // setError(''); // No longer needed
+    // setMessage(''); // No longer needed
     setLoading(true);
 
     if (code.length !== 6) {
-      setError('Please enter the 6-digit code.');
+      // setError('Please enter the 6-digit code.'); // Replaced by toast
+      toast.error('Please enter the 6-digit code.');
       setLoading(false);
       return;
     }
     if (!email) {
-        setError('Email address not found. Cannot verify.');
+        // setError('Email address not found. Cannot verify.'); // Replaced by toast
+        toast.error('Email address not found. Cannot verify.');
         setLoading(false);
         return;
     }
 
     try {
-      const response = await fetch('/api/auth/verify', { // API route to be created
+      const response = await fetch('/api/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code }),
@@ -67,24 +90,27 @@ export default function VerifyEmailPage() {
       }
 
       // Success
-      alert('Email verified successfully! You can now sign in.');
+      // alert('Email verified successfully! You can now sign in.'); // Replaced by toast
+      toast.success('Email verified successfully! You can now sign in.');
       router.push('/signin'); // Redirect to sign-in
 
     } catch (err) {
-      setError(err.message);
+      // setError(err.message); // Replaced by toast
+      toast.error(err.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleResendCode = async () => {
-    setError('');
-    setMessage('');
+    // setError(''); // No longer needed
+    // setMessage(''); // No longer needed
     setResendDisabled(true); // Disable button immediately
     setLoading(true); // Show loading state
 
      if (!email) {
-        setError('Email address not found. Cannot resend code.');
+        // setError('Email address not found. Cannot resend code.'); // Replaced by toast
+        toast.error('Email address not found. Cannot resend code.');
         setLoading(false);
         setResendDisabled(false); // Re-enable if email missing
         return;
@@ -92,11 +118,9 @@ export default function VerifyEmailPage() {
 
     try {
         // Call signup API again to trigger resend logic (it handles upsert)
-        // We need dummy data for name/password as they are required by signup API
         const response = await fetch('/api/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // Send minimal required data + email to trigger code regeneration/resend
             body: JSON.stringify({ 
                 email: email, 
                 name: 'Resend Request', // Placeholder
@@ -108,32 +132,22 @@ export default function VerifyEmailPage() {
         const data = await response.json();
 
         if (!response.ok) {
-            // Handle specific errors if needed, e.g., user already verified
             if (response.status === 409 && data.message.includes('verified')) {
-                 setMessage('Your email is already verified. Please proceed to sign in.');
-                 // Optionally redirect
-                 // router.push('/signin');
+                 // setMessage('Your email is already verified. Please proceed to sign in.'); // Replaced by toast
+                 toast.info('Your email is already verified. Please proceed to sign in.');
+                 setResendDisabled(false); // Keep disabled? Or allow retry? For now, keep disabled.
             } else {
                 throw new Error(data.message || 'Failed to resend code.');
             }
         } else {
-             setMessage('A new verification code has been sent to your email.');
-             // Start countdown timer
-             setCountdown(60);
-             const timer = setInterval(() => {
-                 setCountdown((prev) => {
-                     if (prev <= 1) {
-                         clearInterval(timer);
-                         setResendDisabled(false); // Re-enable button
-                         return 0;
-                     }
-                     return prev - 1;
-                 });
-             }, 1000);
+             // setMessage('A new verification code has been sent to your email.'); // Replaced by toast
+             toast.success('A new verification code has been sent to your email.');
+             setCountdown(60); // Start countdown handled by useEffect
         }
 
     } catch (err) {
-        setError(err.message);
+        // setError(err.message); // Replaced by toast
+        toast.error(err.message || 'An unexpected error occurred.');
         setResendDisabled(false); // Re-enable on error
     } finally {
         setLoading(false);
@@ -144,8 +158,7 @@ export default function VerifyEmailPage() {
     <div className={styles.container}>
       <div className={styles.formBox}>
         <h1 className={styles.title}>Verify Your Email</h1>
-        {message && <p className={styles.message}>{message}</p>}
-        {error && <p className={styles.errorMessage}>{error}</p>}
+        {/* Message and Error paragraphs removed, handled by toasts */}
         
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputGroup}>
