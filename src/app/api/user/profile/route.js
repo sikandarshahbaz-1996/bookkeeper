@@ -85,6 +85,7 @@ export async function PUT(request) {
             businessAddress: updateData.businessAddress,
             businessPhone: updateData.businessPhone,
             businessEmail: updateData.businessEmail,
+            servicesOffered: updateData.servicesOffered, // Add servicesOffered
         }),
     };
 
@@ -97,11 +98,18 @@ export async function PUT(request) {
     }
     // Add more specific validation as needed for arrays, phone number format etc.
     // Example: Ensure arrays are actually arrays if provided
-    const arrayFields = ['qualifications', 'experience', 'areasOfExpertise', 'languagesSpoken', 'softwareProficiency'];
+    const arrayFields = ['qualifications', 'experience', 'areasOfExpertise', 'languagesSpoken', 'softwareProficiency', 'servicesOffered']; // Add servicesOffered
     arrayFields.forEach(key => {
         if (allowedUpdates[key] !== undefined && !Array.isArray(allowedUpdates[key])) {
-            delete allowedUpdates[key]; // Or return error
-            console.warn(`Invalid non-array data provided for ${key}`);
+            // If it's not an array but was provided, treat as an attempt to clear or malformed data.
+            // Depending on strictness, either delete or set to empty array, or return error.
+            // For now, let's ensure it's an array if it exists.
+            // If it's meant to be cleared and comes as undefined, it will be handled by the undefined check.
+            // If it comes as non-array, it's an error or should be sanitized.
+            // For simplicity, if it's not an array, we'll log a warning and remove it.
+            // A more robust solution might return a 400 error.
+            console.warn(`Invalid non-array data provided for ${key}. Field will be ignored.`);
+            delete allowedUpdates[key];
         }
     });
 

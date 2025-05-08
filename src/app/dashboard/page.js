@@ -27,6 +27,12 @@ const softwareProficiencyOptions = [
   "FreeAgent", "SAP Business One", "Microsoft Dynamics 365"
 ];
 
+const servicesOfferedOptions = [
+  "Bookkeeping", "Tax Preparation & Filing", "Payroll Processing", "Financial Statement Preparation",
+  "Audit Services", "Forensic Accounting", "Business Valuation", "Management Consulting",
+  "Budgeting & Forecasting", "Cash Flow Management", "IRS Representation", "Startup Advisory"
+];
+
 
 function DashboardPage() {
   const { token, logout, user: authUser } = useAuth(); // Get authUser for initial state if needed
@@ -65,6 +71,7 @@ function DashboardPage() {
         businessAddress: data.user.businessAddress || '',
         businessPhone: data.user.businessPhone || '',
         businessEmail: data.user.businessEmail || '',
+        servicesOffered: data.user.servicesOffered || [], // Initialize servicesOffered
       });
     } catch (err) {
       setError(err.message);
@@ -176,6 +183,16 @@ function DashboardPage() {
     setEditBusinessData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleBusinessCheckboxChange = (listName, value) => {
+    setEditBusinessData(prev => {
+      const currentList = prev[listName] || [];
+      const newList = currentList.includes(value)
+        ? currentList.filter(item => item !== value)
+        : [...currentList, value];
+      return { ...prev, [listName]: newList };
+    });
+  };
+
   const handleSaveBusinessChanges = async () => {
     if (!token || !editBusinessData) return;
     setIsSaving(true);
@@ -208,6 +225,7 @@ function DashboardPage() {
         businessAddress: data.user.businessAddress || '',
         businessPhone: data.user.businessPhone || '',
         businessEmail: data.user.businessEmail || '',
+        servicesOffered: data.user.servicesOffered || [], // Update servicesOffered
       });
       setIsEditingBusiness(false); 
       toast.success(data.message || 'Business information updated successfully!');
@@ -227,6 +245,7 @@ function DashboardPage() {
         businessAddress: profileData.businessAddress || '',
         businessPhone: profileData.businessPhone || '',
         businessEmail: profileData.businessEmail || '',
+        servicesOffered: profileData.servicesOffered || [], // Reset servicesOffered
     });
     setIsEditingBusiness(false);
     setError('');
@@ -449,6 +468,29 @@ function DashboardPage() {
               )}
             </div>
             {/* Add more business fields here if needed, following the same pattern */}
+          </div>
+
+          <div className={styles.infoBlock}>
+            <h3>Services Offered</h3>
+            {isEditingBusiness ? (
+              <div className={styles.checkboxGrid}>
+                {servicesOfferedOptions.map(service => (
+                  <label key={service} className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={(editBusinessData.servicesOffered || []).includes(service)}
+                      onChange={() => handleBusinessCheckboxChange('servicesOffered', service)}
+                    /> {service}
+                  </label>
+                ))}
+              </div>
+            ) : (
+              profileData.servicesOffered?.length > 0 ? (
+                <ul>{profileData.servicesOffered.map((s, i) => <li key={i}>{s}</li>)}</ul>
+              ) : (
+                <p><em className={styles.emptyField}>empty</em></p>
+              )
+            )}
           </div>
           {/* Add more business-related info blocks as needed */}
         </div>
