@@ -17,13 +17,13 @@ export default function Navbar() {
         <div className={styles.navLinks}>
           {loading ? (
             // Optional: Show a loading indicator or nothing
-            <div className={styles.loadingPlaceholder}></div> 
-          ) : isAuthenticated && user ? (
-            <>
-              <span className={styles.userName}>Welcome, {user.name}!</span>
-              <button onClick={logout} className={styles.signOutButton}>
-                Sign Out
-              </button>
+             <div className={styles.loadingPlaceholder}></div> 
+           ) : isAuthenticated && user ? (
+             <>
+               {/* <span className={styles.userName}>Welcome, {user.name}!</span> Removed again */}
+               <button onClick={logout} className={styles.signOutButton}>
+                 Sign Out
+               </button>
             </>
           ) : (
             <Link href="/signin" className={styles.signInButton}>

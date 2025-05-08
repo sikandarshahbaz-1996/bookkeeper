@@ -3,9 +3,10 @@
   max-width: 1000px;
   margin: 0 auto;
   background-color: #f8f9fa; /* Light background for content area */
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  min-height: calc(100vh - 70px - 80px); /* Full height minus navbar and padding */
+  border-radius: 8px; /* Restored */
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* Restored */
+  min-height: calc(100vh - 70px - 80px); /* Restored original calculation */
+  /* box-sizing: border-box; */ /* Can likely remove this now */
 }
 
 .title {
@@ -16,10 +17,203 @@
   padding-bottom: 10px;
 }
 
-.welcomeMessage {
-  font-size: 18px;
-  color: #555;
-  margin-bottom: 30px;
+.profileSection {
+  background-color: #fff;
+  padding: 30px 40px; /* Increased padding */
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  margin-top: 20px;
 }
 
-/* Add more styles for dashboard content as needed */
+.profileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.profileHeader h2 {
+  font-size: 22px;
+  color: #333;
+  margin: 0; /* Remove default margin */
+}
+
+.editActions {
+    display: flex;
+    gap: 10px;
+}
+
+.infoBlock {
+  margin-bottom: 30px; /* Increased spacing */
+  padding-bottom: 20px; /* Increased spacing */
+  border-bottom: 1px solid #eee;
+}
+.infoBlock:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+
+.infoBlock h3 {
+  font-size: 18px;
+  color: #667eea;
+  margin-bottom: 15px; /* Increased spacing */
+}
+
+.infoBlock p, .infoBlock li, .infoBlock span {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 8px; /* Spacing for display text */
+}
+
+.infoBlock strong {
+  color: #333;
+  min-width: 120px; /* Adjust as needed for alignment */
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.infoBlock ul {
+  list-style: disc;
+  padding-left: 25px;
+  margin-top: 5px;
+}
+
+/* Styles for Edit Mode */
+.formRow {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 10px;
+}
+.formRow label {
+    flex-shrink: 0; /* Prevent label from shrinking */
+}
+.formRow .input {
+    flex-grow: 1;
+    max-width: 400px; /* Limit input width */
+}
+
+.input { /* General input style for dashboard edit */
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  background-color: #ffffff;
+  color: #1c1e21;
+  border-radius: 6px;
+  font-size: 15px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.input:focus {
+  border-color: #667eea;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+.dynamicInputGroup {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.dynamicInputGroup .input {
+    flex-grow: 1;
+}
+
+.addButtonSmall, .removeButtonSmall {
+    padding: 5px 10px;
+    font-size: 13px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border: 1px solid #ccc;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+.addButtonSmall {
+    background-color: #e8eaf6;
+    color: #3f51b5;
+    border-color: #adb5bd;
+}
+.addButtonSmall:hover {
+    background-color: #c5cae9;
+}
+.removeButtonSmall {
+    background-color: #f8d7da;
+    color: #dc3545;
+    border-color: #f5c6cb;
+}
+.removeButtonSmall:hover {
+    background-color: #f1b0b7;
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+  gap: 8px 15px;
+  margin-top: 10px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  font-size: 14px; /* Slightly smaller for edit mode */
+  color: #333;
+  cursor: pointer;
+}
+.checkboxLabel input[type="checkbox"] {
+  margin-right: 8px;
+  accent-color: #667eea; 
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+
+/* Edit/Save/Cancel Buttons */
+.editButton, .saveButton, .cancelButton {
+  display: inline-block;
+  padding: 9px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+.editButton:hover, .saveButton:hover:not(:disabled), .cancelButton:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.editButton:disabled, .saveButton:disabled, .cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.editButton {
+  background-color: #6c757d; 
+  color: white;
+}
+.saveButton {
+  background-color: #28a745; /* Green for save */
+  color: white;
+}
+.cancelButton {
+   background-color: #dc3545; /* Red for cancel */
+   color: white;
+}
+
+
+.errorMessage {
+  color: #dc3545; /* Red for errors */
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 15px;
+  border-radius: 5px;
+  margin-top: 20px;
+  font-size: 15px;
+  text-align: center;
+}

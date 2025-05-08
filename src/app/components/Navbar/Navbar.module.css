@@ -52,11 +52,7 @@
   /* Optional: Add animation */
 }
 
-.userName {
-  font-size: 15px;
-  color: #333;
-  font-weight: 500;
-}
+/* .userName style removed again */
 
 .signInButton,
 .signOutButton {
@@ -99,10 +95,7 @@
     padding: 8px 15px;
     font-size: 14px;
   }
-  .userName {
-    font-size: 14px;
-    display: none; /* Optionally hide username on small screens */
-  }
+  /* .userName responsive style removed again */
 }
 
 @media (max-width: 480px) {
