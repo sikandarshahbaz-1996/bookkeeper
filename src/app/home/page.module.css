@@ -1,0 +1,196 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.hero {
+  width: 100%;
+  padding: 6rem 2rem 6rem;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative; /* Added for positioning the logo */
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  
+}
+
+.title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.description {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0.9;
+}
+
+.ctaContainer {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ctaButton {
+  padding: 0.8rem 1.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.ctaButtonPrimary {
+  background-color: #ffffff;
+  color: #667eea;
+}
+
+.ctaButtonPrimary:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-2px);
+}
+
+.ctaButtonSecondary {
+  background-color: transparent;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+.ctaButtonSecondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.section {
+  width: 100%;
+  max-width: 1200px;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.sectionSecondary {
+  background-color: #ffffff;
+}
+
+.sectionTitle {
+  font-size: 2.2rem;
+  font-weight: 600;
+  margin-bottom: 2.5rem;
+  color: #4a4a4a;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.featureCard {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+  text-align: left;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sectionSecondary .featureCard {
+    background-color: #f8f9fa; /* Slightly different background for cards in secondary section */
+}
+
+.featureCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.featureCard h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+  color: #667eea;
+}
+
+.featureCard p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+.footer {
+  width: 100%;
+  padding: 2rem;
+  text-align: center;
+  background-color: #343a40;
+  color: #f8f9fa;
+  margin-top: auto; /* Pushes footer to the bottom */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .title {
+    font-size: 2.2rem;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
+
+  .ctaButton {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.8rem;
+  }
+
+  .featureCard h3 {
+    font-size: 1.2rem;
+  }
+
+  .featureCard p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 3rem 1rem;
+  }
+  .title {
+    font-size: 1.8rem;
+  }
+  .description {
+    font-size: 0.9rem;
+  }
+  .ctaContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+  .ctaButton {
+    width: 80%;
+    margin-bottom: 0.5rem;
+  }
+  .section {
+    padding: 2rem 1rem;
+  }
+  .featuresGrid {
+    grid-template-columns: 1fr; /* Stack cards on small screens */
+  }
+}

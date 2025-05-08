@@ -1,0 +1,118 @@
+.navbar {
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 0 20px;
+  height: 70px; /* Fixed height for the navbar */
+  display: flex;
+  align-items: center;
+  position: fixed; /* Fixed position at the top */
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000; /* Ensure it's above other content */
+  box-sizing: border-box;
+}
+
+.navbarContainer {
+  width: 100%;
+  max-width: 1200px; /* Max width for content within navbar */
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #1c1e21; /* Dark color for text */
+}
+
+/* .logoImage style removed as it's no longer used */
+
+.navbarTitle {
+  font-size: 24px; /* Adjust as needed */
+  font-weight: 700; /* Bold */
+  color: #667eea; /* Target color */
+  letter-spacing: 0.5px; /* Optional: for slight spacing */
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Add gap between items like username and button */
+}
+
+.loadingPlaceholder {
+  width: 100px; /* Example size */
+  height: 38px; /* Match button height */
+  background-color: #e0e0e0;
+  border-radius: 6px;
+  /* Optional: Add animation */
+}
+
+.userName {
+  font-size: 15px;
+  color: #333;
+  font-weight: 500;
+}
+
+.signInButton,
+.signOutButton {
+  background-color: #667eea; /* Updated color */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.signInButton:hover,
+.signOutButton:hover {
+  background-color: #5a6bb5; /* Darker shade of #667eea */
+}
+
+.signOutButton {
+  cursor: pointer; /* Ensure button cursor */
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 15px;
+    height: 60px;
+  }
+
+  .navbarTitle {
+    font-size: 20px; /* Adjust for smaller screens */
+  }
+  
+  /* .logoImage responsive styles removed */
+
+  .signInButton,
+  .signOutButton {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+  .userName {
+    font-size: 14px;
+    display: none; /* Optionally hide username on small screens */
+  }
+}
+
+@media (max-width: 480px) {
+  /* .logoImage responsive styles removed */
+  
+  .navbarTitle {
+    font-size: 18px; /* Further adjust for very small screens */
+  }
+
+   .navbarContainer {
+    justify-content: space-between; /* Ensure logo is left and button is right */
+  }
+}

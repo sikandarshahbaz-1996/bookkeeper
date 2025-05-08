@@ -1,0 +1,240 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align to top for long form */
+  min-height: calc(100vh - 70px); /* Account for navbar */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px; /* More padding for longer form */
+  box-sizing: border-box;
+  overflow-y: auto; /* Allow scrolling for the container if content overflows */
+}
+
+.formBox {
+  background-color: #ffffff;
+  padding: 30px 40px;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 700px; /* Wider for more complex form */
+  text-align: left; /* Align text to left for form sections */
+  margin-bottom: 40px; /* Space at the bottom */
+}
+
+.title {
+  font-size: 26px;
+  color: #667eea;
+  margin-bottom: 30px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.errorMessage {
+  color: #dc3545; /* Red for errors */
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  color: #555; /* Slightly darker for better contrast on white */
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #667eea;
+  background-color: #ffffff;
+  color: #1c1e21;
+  border-radius: 6px;
+  font-size: 15px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input::placeholder {
+  color: #aaa;
+}
+
+.input:focus {
+  border-color: #667eea;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.dynamicInputGroup {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.dynamicInputGroup .input {
+  flex-grow: 1;
+}
+
+.addButton,
+.removeButton {
+  padding: 10px 15px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid #667eea;
+  min-width: 70px; /* Ensure buttons have some width */
+}
+
+.addButton {
+  background-color: #667eea;
+  color: white;
+}
+
+.addButton:hover {
+  background-color: #5a6bb5;
+}
+
+.removeButton {
+  background-color: #f8f9fa;
+  color: #dc3545; /* Red for remove */
+  border: 1px solid #dc3545;
+}
+
+.removeButton:hover {
+  background-color: #e9ecef;
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid */
+  gap: 10px 15px;
+  margin-bottom: 20px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  font-size: 15px; /* Slightly larger text */
+  color: #333;
+  cursor: pointer;
+  line-height: 1.4; /* Ensure good spacing if text wraps */
+}
+
+.checkboxLabel input[type="checkbox"] {
+  appearance: none; /* Needed for custom background/border */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #ffffff;
+  border: 1px solid #667eea;
+  border-radius: 3px; /* Slightly rounded edges for the checkbox itself */
+  width: 18px; /* Slightly larger checkbox */
+  height: 18px;
+  margin-right: 10px; /* More space between box and text */
+  position: relative;
+  cursor: pointer;
+  outline: none;
+}
+
+.checkboxLabel input[type="checkbox"]:checked {
+  background-color: #667eea; /* Fill color when checked */
+  border-color: #667eea;
+}
+
+/* Custom checkmark */
+.checkboxLabel input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+
+.submitButton {
+  background-color: #667eea;
+  color: white;
+  padding: 14px; /* Larger button */
+  border: none;
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 30px; /* Space before button */
+}
+
+.submitButton:hover {
+  background-color: #5a6bb5;
+}
+
+.backToSignIn {
+  margin-top: 25px;
+  text-align: center;
+  font-size: 14px;
+  color: #555; /* Darker color for the paragraph text */
+}
+
+.signInLink {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.signInLink:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .formBox {
+    padding: 20px 25px;
+  }
+  .title {
+    font-size: 22px;
+  }
+  .sectionTitle {
+    font-size: 17px;
+  }
+  .checkboxGrid {
+    grid-template-columns: 1fr; /* Stack checkboxes on small screens */
+  }
+  .dynamicInputGroup {
+    flex-direction: column; /* Stack input and button */
+    align-items: stretch;
+  }
+  .dynamicInputGroup .input {
+    margin-bottom: 8px;
+  }
+  .addButton, .removeButton {
+    width: 100%;
+  }
+}
