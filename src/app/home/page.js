@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation'; // Import useRouter
 import { useAuth } from '@/context/AuthContext'; // Import useAuth
 import styles from './page.module.css';
 import Link from 'next/link';
+// Import specific icons from react-icons
+import { FaUserCheck, FaLock, FaChartLine } from 'react-icons/fa'; 
+
+// Placeholder icon for steps (can be kept or replaced)
+const StepIcon = ({ number }) => <div className={styles.stepIcon}>{number}</div>;
+// BenefitIcon component is no longer needed as we use react-icons directly
+
 
 export default function HomePage() {
   const { isAuthenticated, loading } = useAuth();
@@ -76,6 +83,59 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* How It Works Section */}
+      <section className={`${styles.section} ${styles.howItWorksSection}`}>
+        <h2 className={styles.sectionTitle}>How It Works</h2>
+        <div className={styles.stepsGrid}>
+          <div className={styles.stepCard}>
+            <StepIcon number="1" />
+            <h3>Sign Up</h3>
+            <p>Businesses and Professionals create their accounts in minutes.</p>
+          </div>
+          <div className={styles.stepCard}>
+            <StepIcon number="2" />
+            <h3>Find Your Match</h3>
+            <p>Businesses search for pros based on needs; Pros showcase their skills.</p>
+          </div>
+          <div className={styles.stepCard}>
+            <StepIcon number="3" />
+            <h3>Connect & Collaborate</h3>
+            <p>Securely communicate, share files, and manage projects.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section className={`${styles.section} ${styles.whyChooseUsSection}`}>
+        <h2 className={styles.sectionTitle}>Why Choose Bookkeeper Connect?</h2>
+        <div className={styles.benefitsGrid}>
+          <div className={styles.benefitCard}>
+            <div className={styles.benefitIconWrapper}> {/* Wrapper for styling */}
+              <FaUserCheck size={40} /> {/* Use react-icon */}
+            </div>
+            <h3>Vetted Professionals</h3>
+            <p>Connect with experienced and verified bookkeepers and accountants.</p>
+          </div>
+          <div className={styles.benefitCard}>
+             <div className={styles.benefitIconWrapper}>
+              <FaLock size={40} /> {/* Use react-icon */}
+            </div>
+            <h3>Secure Platform</h3>
+            <p>Your data and communications are protected with robust security measures.</p>
+          </div>
+          <div className={styles.benefitCard}>
+             <div className={styles.benefitIconWrapper}>
+              <FaChartLine size={40} /> {/* Use react-icon */}
+            </div>
+            <h3>Grow Your Business</h3>
+            <p>Whether finding clients or streamlining finances, we help you succeed.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Add extra space before footer */}
+      <div style={{ marginBottom: '4rem' }}></div> 
 
       <footer className={styles.footer}>
         <p>&copy; {new Date().getFullYear()} Bookkeeper Connect. All rights reserved.</p>

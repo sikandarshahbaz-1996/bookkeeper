@@ -6,6 +6,7 @@
   background-color: #f8f9fa;
   color: #333;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 .hero {
@@ -13,47 +14,60 @@
   padding: 6rem 2rem 6rem;
   text-align: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  position: relative; /* Added for positioning the logo */
+  position: relative; 
   color: white;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* Add subtle animation */
+  /* background-size: 200% 200%;
+  animation: gradientShift 10s ease infinite; */
 }
 
-.logo {
-  
-}
+/* Optional: Keyframes for gradient animation */
+/* @keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+} */
+
 
 .title {
   font-size: 2.8rem;
   font-weight: 700;
   margin-bottom: 1rem;
   line-height: 1.2;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Subtle text shadow */
 }
 
 .description {
   font-size: 1.2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem; /* Increased space */
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
-  opacity: 0.9;
+  opacity: 0.95; /* Slightly less transparent */
 }
 
 .ctaContainer {
   display: flex;
   justify-content: center;
-  gap: 1rem;
+  gap: 1.5rem; /* Increased gap */
   flex-wrap: wrap;
 }
 
 .ctaButton {
-  padding: 0.8rem 1.8rem;
+  padding: 0.9rem 2rem; /* Slightly larger padding */
   font-size: 1rem;
   font-weight: 600;
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease; /* Smooth transition for all properties */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Slightly stronger shadow */
+}
+
+.ctaButton:hover {
+  transform: translateY(-3px) scale(1.03); /* Lift and slightly enlarge */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
 .ctaButtonPrimary {
@@ -62,8 +76,7 @@
 }
 
 .ctaButtonPrimary:hover {
-  background-color: #f0f0f0;
-  transform: translateY(-2px);
+  background-color: #f5f5f5; /* Lighter hover */
 }
 
 .ctaButtonSecondary {
@@ -73,14 +86,13 @@
 }
 
 .ctaButtonSecondary:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.15); /* More visible hover */
 }
 
 .section {
   width: 100%;
   max-width: 1200px;
-  padding: 3rem 2rem;
+  padding: 5rem 2rem; /* Increased vertical padding */
   text-align: center;
 }
 
@@ -89,56 +101,139 @@
 }
 
 .sectionTitle {
-  font-size: 2.2rem;
-  font-weight: 600;
-  margin-bottom: 2.5rem;
-  color: #4a4a4a;
+  font-size: 2.4rem; /* Slightly larger */
+  font-weight: 700; /* Bolder */
+  margin-bottom: 3.5rem; /* Increased margin */
+  color: #333; /* Darker color */
+  position: relative;
+  display: inline-block;
 }
 
-.featuresGrid {
+/* Optional: Underline effect for section titles */
+.sectionTitle::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: #667eea;
+    border-radius: 2px;
+}
+
+
+.featuresGrid, .stepsGrid, .benefitsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  gap: 2.5rem; /* Increased gap */
 }
 
-.featureCard {
+/* Add justify-content to stepsGrid and benefitsGrid */
+.stepsGrid, .benefitsGrid {
+  justify-content: center; /* Center grid items horizontally */
+}
+
+
+.featureCard, .stepCard, .benefitCard {
   background-color: #ffffff;
-  padding: 2rem;
+  padding: 2.5rem 2rem; /* Increased padding */
   border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06); /* Softer, wider shadow */
   text-align: left;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  border: 1px solid transparent; /* Prepare for border hover */
 }
 
 .sectionSecondary .featureCard {
-    background-color: #f8f9fa; /* Slightly different background for cards in secondary section */
+    background-color: #f8f9fa; 
+}
+.howItWorksSection .stepCard {
+    background-color: #f8f9fa;
+    text-align: center;
+}
+.whyChooseUsSection .benefitCard {
+    text-align: center;
 }
 
-.featureCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+
+.featureCard:hover, .stepCard:hover, .benefitCard:hover {
+  transform: translateY(-8px); /* More lift */
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1); /* Stronger shadow on hover */
+  border-color: #667eea; /* Add border color on hover */
 }
 
-.featureCard h3 {
-  font-size: 1.4rem;
+.featureCard h3, .stepCard h3, .benefitCard h3 {
+  font-size: 1.5rem; /* Slightly larger */
   font-weight: 600;
-  margin-bottom: 0.8rem;
+  margin-bottom: 1rem; /* Increased space */
   color: #667eea;
 }
+/* Removed color override for step/benefit card h3 */
+/* .stepCard h3, .benefitCard h3 {
+    color: #333; 
+} */
 
-.featureCard p {
+
+.featureCard p, .stepCard p, .benefitCard p {
   font-size: 1rem;
-  line-height: 1.6;
+  line-height: 1.7; /* Increased line height */
   color: #555;
 }
+.stepCard p {
+    max-width: 300px;
+    margin: 0 auto; /* Center text if card is centered */
+}
+
+
+/* How It Works Section Styles */
+.howItWorksSection {
+  background-color: #eef0f6; /* Slightly different background */
+}
+
+.stepIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Use gradient */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 auto 1.2rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+
+/* Why Choose Us Section Styles */
+.whyChooseUsSection {
+  /* Uses default background #f8f9fa */
+}
+
+/* Removed .benefitIcon style */
+
+.benefitIconWrapper {
+  display: inline-flex; /* Allows centering */
+  justify-content: center;
+  align-items: center;
+  width: 80px; /* Size of the wrapper */
+  height: 80px;
+  background-color: #e8eaf6; /* Light background for icon */
+  border-radius: 50%; /* Circular background */
+  margin-bottom: 1.5rem;
+  color: #667eea; /* Icon color */
+}
+
 
 .footer {
   width: 100%;
-  padding: 2rem;
+  padding: 3rem 2rem; /* Increased padding */
   text-align: center;
   background-color: #343a40;
   color: #f8f9fa;
-  margin-top: auto; /* Pushes footer to the bottom */
+  margin-top: auto; 
 }
 
 /* Responsive adjustments */
@@ -152,45 +247,69 @@
   }
 
   .ctaButton {
-    padding: 0.7rem 1.5rem;
+    padding: 0.8rem 1.6rem; /* Adjusted */
     font-size: 0.9rem;
+  }
+
+  .section {
+    padding: 4rem 1.5rem; /* Adjusted */
   }
 
   .sectionTitle {
-    font-size: 1.8rem;
+    font-size: 2rem; /* Adjusted */
+    margin-bottom: 3rem; /* Adjusted */
   }
 
-  .featureCard h3 {
-    font-size: 1.2rem;
+  .featureCard h3, .stepCard h3, .benefitCard h3 {
+    font-size: 1.3rem; /* Adjusted */
   }
 
-  .featureCard p {
-    font-size: 0.9rem;
+  .featureCard p, .stepCard p, .benefitCard p {
+    font-size: 0.95rem; /* Adjusted */
+  }
+
+  .stepIcon {
+    width: 55px;
+    height: 55px;
+    font-size: 1.6rem;
+  }
+
+  .benefitIcon {
+    font-size: 2.5rem;
   }
 }
 
 @media (max-width: 480px) {
   .hero {
-    padding: 3rem 1rem;
+    padding: 4rem 1rem; 
   }
   .title {
-    font-size: 1.8rem;
+    font-size: 2rem; /* Adjusted */
   }
   .description {
-    font-size: 0.9rem;
+    font-size: 1rem; /* Adjusted */
   }
   .ctaContainer {
     flex-direction: column;
     align-items: center;
+    gap: 1rem; /* Adjusted */
   }
   .ctaButton {
-    width: 80%;
-    margin-bottom: 0.5rem;
+    width: 100%; /* Make buttons full width on mobile */
+    padding: 0.9rem 1rem; /* Adjusted */
   }
   .section {
-    padding: 2rem 1rem;
+    padding: 3rem 1rem; /* Adjusted */
   }
-  .featuresGrid {
-    grid-template-columns: 1fr; /* Stack cards on small screens */
+  .featuresGrid, .stepsGrid, .benefitsGrid {
+    grid-template-columns: 1fr; 
+    gap: 2rem; /* Adjusted */
+  }
+  .sectionTitle {
+    font-size: 1.8rem; /* Adjusted */
+    margin-bottom: 2.5rem; /* Adjusted */
+  }
+  .featureCard, .stepCard, .benefitCard {
+    padding: 2rem 1.5rem; /* Adjusted */
   }
 }

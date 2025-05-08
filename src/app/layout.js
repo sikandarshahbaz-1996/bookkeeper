@@ -38,7 +38,8 @@ export default function RootLayout({ children }) {
             theme="light" // or "dark" or "colored"
           />
           <Navbar />
-          <main style={{ paddingTop: '70px' }}> {/* Add padding for fixed navbar */}
+          {/* Add background color to main to prevent body bg showing in padding */}
+          <main style={{ paddingTop: '70px', backgroundColor: '#f8f9fa' }}> 
             {children}
           </main>
         </AuthProvider>
