@@ -3,17 +3,17 @@
   justify-content: center;
   align-items: flex-start; /* Align to top for long form */
   min-height: calc(100vh - 70px); /* Account for navbar */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: var(--background-color); /* Use global background */
   padding: 40px 20px; /* More padding for longer form */
   box-sizing: border-box;
   overflow-y: auto; /* Allow scrolling for the container if content overflows */
 }
 
 .formBox {
-  background-color: #ffffff;
+  background-color: var(--card-background-color);
   padding: 30px 40px;
   border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow);
   width: 100%;
   max-width: 700px; /* Wider for more complex form */
   text-align: left; /* Align text to left for form sections */
@@ -22,16 +22,16 @@
 
 .title {
   font-size: 26px;
-  color: #667eea;
+  color: var(--primary-color);
   margin-bottom: 30px;
   font-weight: 700;
   text-align: center;
 }
 
 .errorMessage {
-  color: #dc3545; /* Red for errors */
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
+  color: var(--error-color);
+  background-color: rgba(220, 53, 69, 0.1); /* Lighter background for error */
+  border: 1px solid var(--error-color);
   padding: 10px;
   border-radius: 5px;
   margin-bottom: 20px;
@@ -72,7 +72,7 @@
   border: none;
   padding: 0 10px;
   cursor: pointer;
-  color: #667eea;
+  color: var(--primary-color);
   font-size: 13px;
   font-weight: 600;
 }
@@ -85,7 +85,7 @@
 .label {
   display: block;
   font-size: 14px;
-  color: #555; /* Slightly darker for better contrast on white */
+  color: var(--foreground-color); 
   margin-bottom: 8px;
   font-weight: 600;
 }
@@ -93,9 +93,9 @@
 .input {
   width: 100%;
   padding: 12px;
-  border: 1px solid #667eea;
-  background-color: #ffffff;
-  color: #1c1e21;
+  border: 1px solid var(--input-border-color);
+  background-color: var(--input-background-color);
+  color: var(--input-text-color);
   border-radius: 6px;
   font-size: 15px;
   box-sizing: border-box;
@@ -103,23 +103,23 @@
 }
 
 .input::placeholder {
-  color: #aaa;
+  color: var(--secondary-color); /* Use secondary color for placeholder */
 }
 
 .input:focus {
-  border-color: #667eea;
+  border-color: var(--input-focus-border-color);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--input-focus-box-shadow);
 }
 
 .sectionTitle {
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--foreground-color);
   margin-top: 30px;
   margin-bottom: 15px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .dynamicInputGroup {
@@ -141,27 +141,28 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  border: 1px solid #667eea;
+  border: 1px solid var(--primary-color);
   min-width: 70px; /* Ensure buttons have some width */
 }
 
 .addButton {
-  background-color: #667eea;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
 }
 
 .addButton:hover {
-  background-color: #5a6bb5;
+  background-color: var(--primary-color-hover);
 }
 
 .removeButton {
-  background-color: #f8f9fa;
-  color: #dc3545; /* Red for remove */
-  border: 1px solid #dc3545;
+  background-color: transparent; /* Or var(--card-background-color) */
+  color: var(--error-color); 
+  border: 1px solid var(--error-color);
 }
 
 .removeButton:hover {
-  background-color: #e9ecef;
+  background-color: rgba(220, 53, 69, 0.1); /* Light error background on hover */
+  color: #c42332; /* Darker error color text on hover */
 }
 
 .checkboxGrid {
@@ -175,7 +176,7 @@
   display: flex;
   align-items: center;
   font-size: 15px; /* Slightly larger text */
-  color: #333;
+  color: var(--foreground-color);
   cursor: pointer;
   line-height: 1.4; /* Ensure good spacing if text wraps */
 }
@@ -184,8 +185,8 @@
   appearance: none; /* Needed for custom background/border */
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-color: #ffffff;
-  border: 1px solid #667eea;
+  background-color: var(--input-background-color);
+  border: 1px solid var(--primary-color);
   border-radius: 3px; /* Slightly rounded edges for the checkbox itself */
   width: 18px; /* Slightly larger checkbox */
   height: 18px;
@@ -196,8 +197,8 @@
 }
 
 .checkboxLabel input[type="checkbox"]:checked {
-  background-color: #667eea; /* Fill color when checked */
-  border-color: #667eea;
+  background-color: var(--primary-color); 
+  border-color: var(--primary-color);
 }
 
 /* Custom checkmark */
@@ -208,15 +209,15 @@
   top: 1px;
   width: 5px;
   height: 10px;
-  border: solid white;
+  border: solid var(--primary-text-color); /* Use primary text color for checkmark */
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
 
 
 .submitButton {
-  background-color: #667eea;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
   padding: 14px; /* Larger button */
   border: none;
   border-radius: 6px;
@@ -228,18 +229,18 @@
 }
 
 .submitButton:hover {
-  background-color: #5a6bb5;
+  background-color: var(--primary-color-hover);
 }
 
 .backToSignIn {
   margin-top: 25px;
   text-align: center;
   font-size: 14px;
-  color: #555; /* Darker color for the paragraph text */
+  color: var(--foreground-color); 
 }
 
 .signInLink {
-  color: #667eea;
+  color: var(--link-color);
   text-decoration: none;
   font-weight: 600;
 }

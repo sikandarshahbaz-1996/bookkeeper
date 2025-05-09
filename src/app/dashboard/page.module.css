@@ -9,10 +9,10 @@
 
 .profileSection {
   /* This is the main content card */
-  background-color: #fff;
+  background-color: var(--card-background-color);
   padding: 30px 40px; 
   border-radius: 8px;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.1); /* Slightly stronger shadow */
+  box-shadow: var(--card-shadow);
   margin: 0 auto; /* Center the card horizontally, remove top margin */
   max-width: 800px; /* Set max width for the info card */
 }
@@ -23,12 +23,12 @@
   align-items: center;
   margin-bottom: 25px;
   padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .profileHeader h2 {
   font-size: 22px;
-  color: #333;
+  color: var(--foreground-color);
   margin: 0; /* Remove default margin */
 }
 
@@ -40,7 +40,7 @@
 .infoBlock {
   margin-bottom: 30px; /* Increased spacing */
   padding-bottom: 20px; /* Increased spacing */
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
 }
 .infoBlock:last-of-type {
   border-bottom: none;
@@ -51,19 +51,20 @@
 
 .infoBlock h3 {
   font-size: 18px;
-  color: #667eea;
+  color: var(--primary-color);
   margin-bottom: 15px; /* Increased spacing */
 }
 
 .infoBlock p, .infoBlock li, .infoBlock span {
   font-size: 15px;
-  color: #555;
+  color: var(--foreground-color);
   line-height: 1.6;
   margin-bottom: 8px; /* Spacing for display text */
 }
 
 .infoBlock strong {
-  color: #333;
+  color: var(--foreground-color); /* Make strong stand out a bit more */
+  font-weight: 600;
   min-width: 120px; /* Adjust as needed for alignment */
   display: inline-block;
   margin-right: 10px;
@@ -93,18 +94,18 @@
 .input { /* General input style for dashboard edit */
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #ccc;
-  background-color: #ffffff;
-  color: #1c1e21;
+  border: 1px solid var(--input-border-color);
+  background-color: var(--input-background-color);
+  color: var(--input-text-color);
   border-radius: 6px;
   font-size: 15px;
   box-sizing: border-box;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .input:focus {
-  border-color: #667eea;
+  border-color: var(--input-focus-border-color);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--input-focus-box-shadow);
 }
 
 .dynamicInputGroup {
@@ -123,24 +124,24 @@
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     flex-shrink: 0; /* Prevent shrinking */
 }
 .addButtonSmall {
-    background-color: #e8eaf6;
-    color: #3f51b5;
-    border-color: #adb5bd;
+    background-color: var(--primary-color);
+    color: var(--primary-text-color);
+    border-color: var(--primary-color-hover);
 }
 .addButtonSmall:hover {
-    background-color: #c5cae9;
+    background-color: var(--primary-color-hover);
 }
 .removeButtonSmall {
-    background-color: #f8d7da;
-    color: #dc3545;
-    border-color: #f5c6cb;
+    background-color: var(--error-color);
+    color: var(--primary-text-color); /* Assuming white text on error color */
+    border-color: #c42332; /* Darker shade of error for border */
 }
 .removeButtonSmall:hover {
-    background-color: #f1b0b7;
+    background-color: #c42332; /* Darker shade of error */
 }
 
 .checkboxGrid {
@@ -154,7 +155,7 @@
   display: flex;
   align-items: center;
   font-size: 15px; /* Match signup style */
-  color: #333;
+  color: var(--foreground-color);
   cursor: pointer;
   line-height: 1.4; 
 }
@@ -163,8 +164,8 @@
   appearance: none; 
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-color: #ffffff;
-  border: 1px solid #667eea;
+  background-color: var(--input-background-color);
+  border: 1px solid var(--primary-color);
   border-radius: 3px; 
   width: 18px; 
   height: 18px;
@@ -175,8 +176,8 @@
 }
 
 .checkboxLabel input[type="checkbox"]:checked {
-  background-color: #667eea; 
-  border-color: #667eea;
+  background-color: var(--primary-color); 
+  border-color: var(--primary-color);
 }
 
 /* Custom checkmark */
@@ -187,7 +188,7 @@
   top: 1px;
   width: 5px;
   height: 10px;
-  border: solid white;
+  border: solid var(--primary-text-color); /* Use primary text color for checkmark */
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
@@ -213,23 +214,23 @@
 }
 
 .editButton {
-  background-color: #6c757d; 
-  color: white;
+  background-color: var(--secondary-color); 
+  color: var(--secondary-text-color);
 }
 .saveButton {
-  background-color: #28a745; /* Green for save */
-  color: white;
+  background-color: var(--success-color);
+  color: var(--primary-text-color); /* Assuming white text on success */
 }
 .cancelButton {
-   background-color: #dc3545; /* Red for cancel */
-   color: white;
+   background-color: var(--error-color);
+   color: var(--primary-text-color); /* Assuming white text on error */
 }
 
 
 .errorMessage {
-  color: #dc3545; /* Red for errors */
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
+  color: var(--error-color); 
+  background-color: rgba(220, 53, 69, 0.1); /* Lighter background for error */
+  border: 1px solid var(--error-color);
   padding: 15px;
   border-radius: 5px;
   margin-top: 20px;
@@ -239,7 +240,7 @@
 
 .emptyField {
   font-style: italic;
-  color: #777; /* A slightly lighter color for empty fields */
+  color: var(--secondary-color); /* Use secondary color for empty fields */
 }
 
 /* Styles for Services Offered with Rates */
@@ -271,7 +272,7 @@
 
 .inlineError {
   font-size: 12px;
-  color: #dc3545; /* Red for errors */
+  color: var(--error-color); 
   margin-top: 2px; /* Small space above error message */
 }
 
@@ -281,7 +282,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-color);
 }
 .dayAvailabilityRow:last-child {
   border-bottom: none;
@@ -300,8 +301,8 @@
   appearance: none; 
   -webkit-appearance: none;
   -moz-appearance: none;
-  background-color: #ffffff;
-  border: 1px solid #667eea;
+  background-color: var(--input-background-color);
+  border: 1px solid var(--primary-color);
   border-radius: 3px; 
   width: 18px; 
   height: 18px;
@@ -310,8 +311,8 @@
   position: relative; /* For custom checkmark if needed */
 }
 .availabilityToggle:checked {
-  background-color: #667eea; 
-  border-color: #667eea;
+  background-color: var(--primary-color); 
+  border-color: var(--primary-color);
 }
 .availabilityToggle:checked::after { /* Custom checkmark */
   content: '';
@@ -320,7 +321,7 @@
   top: 1px;
   width: 5px;
   height: 10px;
-  border: solid white;
+  border: solid var(--primary-text-color); /* Use primary text color for checkmark */
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
@@ -328,11 +329,11 @@
 
 .dayLabel {
   font-weight: normal; /* Override strong if it's inside a label with strong */
-  color: #333;
+  color: var(--foreground-color);
   cursor: pointer; /* If clicking label toggles checkbox */
 }
 .dayLabel strong { /* If day name itself is wrapped in strong */
-    color: #333;
+    color: var(--foreground-color);
     font-weight: 600; /* Make day name stand out a bit */
 }
 
@@ -348,11 +349,11 @@
   font-size: 14px;
 }
 .timeSelectors span { /* For the "to" text */
-  color: #555;
+  color: var(--foreground-color);
 }
 
 .dayOffText {
-  color: #777;
+  color: var(--secondary-color); /* Use secondary color for less emphasis */
   font-style: italic;
   flex-grow: 1;
   text-align: right;
@@ -375,19 +376,19 @@
   background-color: transparent;
   font-size: 16px;
   font-weight: 500;
-  color: #555;
+  color: var(--foreground-color);
   transition: color 0.3s ease, border-bottom-color 0.3s ease;
   border-bottom: 2px solid transparent; /* For active state indicator */
   margin-right: 10px; /* Space between tab buttons */
 }
 
 .tabButton:hover {
-  color: #667eea;
+  color: var(--primary-color);
 }
 
 .activeTab {
-  color: #667eea;
-  border-bottom-color: #667eea; /* Active tab indicator */
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color); /* Active tab indicator */
 }
 
 

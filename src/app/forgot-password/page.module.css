@@ -3,16 +3,16 @@
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 70px); /* Account for navbar */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Same gradient as sign-in */
+  background-color: var(--background-color); /* Use global background */
   padding: 20px;
   box-sizing: border-box;
 }
 
 .formBox {
-  background-color: #ffffff;
+  background-color: var(--card-background-color);
   padding: 40px;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow);
   width: 100%;
   max-width: 450px; /* Slightly wider for more text */
   text-align: center;
@@ -20,14 +20,14 @@
 
 .title {
   font-size: 24px;
-  color: #667eea; /* Consistent accent color */
+  color: var(--primary-color); 
   margin-bottom: 15px;
   font-weight: 700;
 }
 
 .subtitle {
   font-size: 15px;
-  color: #606770;
+  color: var(--foreground-color);
   margin-bottom: 30px;
   line-height: 1.5;
 }
@@ -45,7 +45,7 @@
 .label {
   display: block;
   font-size: 14px;
-  color: #606770;
+  color: var(--foreground-color);
   margin-bottom: 8px;
   font-weight: 600;
 }
@@ -53,9 +53,9 @@
 .input {
   width: 100%;
   padding: 12px;
-  border: 1px solid #667eea;
-  background-color: #ffffff;
-  color: #1c1e21;
+  border: 1px solid var(--input-border-color);
+  background-color: var(--input-background-color);
+  color: var(--input-text-color);
   border-radius: 6px;
   font-size: 16px;
   box-sizing: border-box;
@@ -63,18 +63,18 @@
 }
 
 .input::placeholder {
-  color: #aaa;
+  color: var(--secondary-color); /* Use secondary for placeholder */
 }
 
 .input:focus {
-  border-color: #667eea;
+  border-color: var(--input-focus-border-color);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--input-focus-box-shadow);
 }
 
 .submitButton {
-  background-color: #667eea;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
   padding: 12px;
   border: none;
   border-radius: 6px;
@@ -86,7 +86,7 @@
 }
 
 .submitButton:hover {
-  background-color: #5a6bb5; /* Darker shade */
+  background-color: var(--primary-color-hover); 
 }
 
 .backToSignIn {
@@ -94,7 +94,7 @@
 }
 
 .signInLink {
-  color: #667eea;
+  color: var(--link-color);
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;

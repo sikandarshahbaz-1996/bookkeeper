@@ -5,6 +5,7 @@ import { ToastContainer } from 'react-toastify'; // Import ToastContainer
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer"; // Import Footer
 import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext"; // Import ThemeProvider
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,9 +26,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <AuthProvider>
-          <ToastContainer 
-            position="top-right"
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastContainer 
+              position="top-right"
             autoClose={5000}
             hideProgressBar={false}
             newestOnTop={false}
@@ -39,12 +41,13 @@ export default function RootLayout({ children }) {
             theme="light" // or "dark" or "colored"
           />
           <Navbar />
-          {/* Add background color to main to prevent body bg showing in padding */}
-          <main style={{ paddingTop: '70px', backgroundColor: '#f8f9fa' }}> 
+          {/* paddingTop is to offset fixed Navbar. Background color will be inherited or set by globals.css */}
+          <main style={{ paddingTop: '70px' }}> 
             {children}
           </main>
           <Footer /> {/* Add Footer here */}
         </AuthProvider>
+      </ThemeProvider>
       </body>
     </html>
   );

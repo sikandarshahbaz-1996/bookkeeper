@@ -1,0 +1,23 @@
+.toggleButton {
+  background-color: transparent;
+  border: 1px solid var(--border-color); /* Use CSS variable */
+  color: var(--foreground-color); /* Use CSS variable */
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.2rem; /* Adjust icon size if needed */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.toggleButton:hover {
+  background-color: var(--card-border-color); /* Slightly darker on hover, adjust as needed */
+  border-color: var(--foreground-color);
+}
+
+.toggleButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--input-focus-border-color); /* Use CSS variable */
+}

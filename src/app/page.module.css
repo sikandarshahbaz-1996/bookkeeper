@@ -1,11 +1,5 @@
 .page {
-  --gray-rgb: 0, 0, 0;
-  --gray-alpha-200: rgba(var(--gray-rgb), 0.08);
-  --gray-alpha-100: rgba(var(--gray-rgb), 0.05);
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-
+  /* Removed local CSS variables, will use global ones */
   display: grid;
   grid-template-rows: 20px 1fr 20px;
   align-items: center;
@@ -14,18 +8,10 @@
   padding: 80px;
   gap: 64px;
   font-family: var(--font-geist-sans);
+  /* background-color and color will be inherited from body via globals.css */
 }
 
-@media (prefers-color-scheme: dark) {
-  .page {
-    --gray-rgb: 255, 255, 255;
-    --gray-alpha-200: rgba(var(--gray-rgb), 0.145);
-    --gray-alpha-100: rgba(var(--gray-rgb), 0.06);
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-  }
-}
+/* Removed @media (prefers-color-scheme: dark) block for .page variables */
 
 .main {
   display: flex;
@@ -50,7 +36,8 @@
 
 .main code {
   font-family: inherit;
-  background: var(--gray-alpha-100);
+  background: var(--border-color); /* Use a subtle background, like border or input background */
+  color: var(--foreground-color); /* Ensure text is readable */
   padding: 2px 4px;
   border-radius: 4px;
   font-weight: 600;
@@ -82,13 +69,15 @@
 }
 
 a.primary {
-  background: var(--foreground);
-  color: var(--background);
+  background: var(--primary-color);
+  color: var(--primary-text-color);
   gap: 8px;
 }
 
 a.secondary {
-  border-color: var(--gray-alpha-200);
+  border-color: var(--border-color);
+  color: var(--foreground-color); /* Ensure text is readable */
+  background-color: transparent; /* Or var(--card-background-color) for a slight fill */
   min-width: 158px;
 }
 
@@ -111,13 +100,14 @@ a.secondary {
 /* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {
   a.primary:hover {
-    background: var(--button-primary-hover);
+    background: var(--primary-color-hover);
     border-color: transparent;
   }
 
   a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
+    background: var(--card-border-color); /* Or a slightly different hover background */
+    border-color: var(--primary-color-hover); /* Or keep transparent if preferred */
+    color: var(--primary-color-hover);
   }
 
   .footer a:hover {
@@ -161,8 +151,8 @@ a.secondary {
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
+/* Replaced prefers-color-scheme with data-theme selector */
+[data-theme="dark"] .logo {
+  filter: invert(1) hue-rotate(180deg); /* Common technique for inverting and color shifting logos for dark mode */
+  /* Or simply filter: invert(1) if that looks better */
 }

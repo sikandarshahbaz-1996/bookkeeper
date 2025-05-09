@@ -2,8 +2,9 @@
   width: 100%;
   padding: 2.5rem 2rem; /* Adjusted padding */
   text-align: center;
-  background-color: #343a40; /* Dark background */
-  color: #f8f9fa; /* Light text */
+  background-color: var(--card-background-color); /* Using card background, can be a specific footer variable */
+  color: var(--foreground-color); /* Using main foreground color */
+  border-top: 1px solid var(--border-color); /* Add a top border */
   margin-top: auto; /* Helps push footer down if content is short */
   flex-shrink: 0; /* Prevent footer from shrinking */
   box-sizing: border-box; /* Include padding in width */
@@ -12,7 +13,7 @@
 .footer p {
     margin: 0;
     font-size: 0.9rem;
-    color: #ced4da; /* Slightly softer text color */
+    color: var(--secondary-color); /* Use secondary color for less emphasis */
 }
 
 /* Optional: Add responsive padding */

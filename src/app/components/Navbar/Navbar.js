@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext'; // Import useAuth
 import styles from './Navbar.module.css';
+import ThemeToggleButton from '../ThemeToggleButton/ThemeToggleButton'; // Import ThemeToggleButton
 
 export default function Navbar() {
   const { user, isAuthenticated, loading, logout } = useAuth();
@@ -15,6 +16,7 @@ export default function Navbar() {
           <span className={styles.navbarTitle}>BOOKKEEPER</span>
         </Link>
         <div className={styles.navLinks}>
+          <ThemeToggleButton /> {/* Add ThemeToggleButton here */}
           {loading ? (
             // Optional: Show a loading indicator or nothing
              <div className={styles.loadingPlaceholder}></div> 

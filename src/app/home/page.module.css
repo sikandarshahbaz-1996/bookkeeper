@@ -3,8 +3,7 @@
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  background-color: #f8f9fa;
-  color: #333;
+  /* background-color and color inherited from body/globals.css */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   overflow-x: hidden; /* Prevent horizontal scroll */
 }
@@ -13,10 +12,10 @@
   width: 100%;
   padding: 6rem 2rem 6rem;
   text-align: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--hero-background);
   position: relative; 
-  color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: var(--hero-text-color);
+  box-shadow: var(--card-shadow); /* Use general card shadow or a specific hero shadow */
   /* Add subtle animation */
   /* background-size: 200% 200%;
   animation: gradientShift 10s ease infinite; */
@@ -35,7 +34,7 @@
   font-weight: 700;
   margin-bottom: 1rem;
   line-height: 1.2;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Subtle text shadow */
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Subtle text shadow, might need adjustment for dark mode */
 }
 
 .description {
@@ -71,22 +70,22 @@
 }
 
 .ctaButtonPrimary {
-  background-color: #ffffff;
-  color: #667eea;
+  background-color: var(--hero-button-primary-bg);
+  color: var(--hero-button-primary-text);
 }
 
 .ctaButtonPrimary:hover {
-  background-color: #f5f5f5; /* Lighter hover */
+  background-color: var(--hero-button-primary-hover-bg);
 }
 
 .ctaButtonSecondary {
   background-color: transparent;
-  color: #ffffff;
-  border: 2px solid #ffffff;
+  color: var(--hero-button-secondary-text);
+  border: 2px solid var(--hero-button-secondary-border);
 }
 
 .ctaButtonSecondary:hover {
-  background-color: rgba(255, 255, 255, 0.15); /* More visible hover */
+  background-color: var(--hero-button-secondary-hover-bg);
 }
 
 .section {
@@ -97,14 +96,14 @@
 }
 
 .sectionSecondary {
-  background-color: #ffffff;
+  background-color: var(--section-secondary-bg);
 }
 
 .sectionTitle {
   font-size: 2.4rem; /* Slightly larger */
   font-weight: 700; /* Bolder */
   margin-bottom: 3.5rem; /* Increased margin */
-  color: #333; /* Darker color */
+  color: var(--foreground-color); 
   position: relative;
   display: inline-block;
 }
@@ -118,7 +117,7 @@
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background-color: #667eea;
+    background-color: var(--primary-color);
     border-radius: 2px;
 }
 
@@ -136,20 +135,20 @@
 
 
 .featureCard, .stepCard, .benefitCard {
-  background-color: #ffffff;
+  background-color: var(--card-background-color);
   padding: 2.5rem 2rem; /* Increased padding */
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06); /* Softer, wider shadow */
+  box-shadow: var(--card-shadow); 
   text-align: left;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   border: 1px solid transparent; /* Prepare for border hover */
 }
 
 .sectionSecondary .featureCard {
-    background-color: #f8f9fa; 
+    background-color: var(--card-alt-bg); 
 }
 .howItWorksSection .stepCard {
-    background-color: #f8f9fa;
+    background-color: var(--card-alt-bg); /* Use alt card bg if section has different bg */
     text-align: center;
 }
 .whyChooseUsSection .benefitCard {
@@ -159,26 +158,26 @@
 
 .featureCard:hover, .stepCard:hover, .benefitCard:hover {
   transform: translateY(-8px); /* More lift */
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1); /* Stronger shadow on hover */
-  border-color: #667eea; /* Add border color on hover */
+  box-shadow: 0 14px 28px rgba(0,0,0,0.1); /* Consider a variable for hover shadow */
+  border-color: var(--primary-color); 
 }
 
 .featureCard h3, .stepCard h3, .benefitCard h3 {
   font-size: 1.5rem; /* Slightly larger */
   font-weight: 600;
   margin-bottom: 1rem; /* Increased space */
-  color: #667eea;
+  color: var(--primary-color);
 }
 /* Removed color override for step/benefit card h3 */
 /* .stepCard h3, .benefitCard h3 {
-    color: #333; 
+    color: var(--foreground-color); 
 } */
 
 
 .featureCard p, .stepCard p, .benefitCard p {
   font-size: 1rem;
   line-height: 1.7; /* Increased line height */
-  color: #555;
+  color: var(--foreground-color);
 }
 .stepCard p {
     max-width: 300px;
@@ -188,22 +187,22 @@
 
 /* How It Works Section Styles */
 .howItWorksSection {
-  background-color: #eef0f6; /* Slightly different background */
+  background-color: var(--card-alt-bg); /* Use alt card bg or a specific section bg */
 }
 
 .stepIcon {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Use gradient */
-  color: white;
+  background: var(--step-icon-gradient); 
+  color: var(--hero-text-color); /* Assuming white/light text on gradient */
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 1.8rem;
   font-weight: 700;
   margin: 0 auto 1.2rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--card-shadow);
 }
 
 
@@ -220,10 +219,10 @@
   align-items: center;
   width: 80px; /* Size of the wrapper */
   height: 80px;
-  background-color: #e8eaf6; /* Light background for icon */
+  background-color: var(--benefit-icon-wrapper-bg); 
   border-radius: 50%; /* Circular background */
   margin-bottom: 1.5rem;
-  color: #667eea; /* Icon color */
+  color: var(--benefit-icon-color); 
 }
 
 
