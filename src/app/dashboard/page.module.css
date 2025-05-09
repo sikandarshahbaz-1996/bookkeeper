@@ -218,9 +218,18 @@
 }
 
 .editButton {
-  background-color: var(--secondary-color); 
-  color: var(--secondary-text-color);
+  background-color: var(--primary-color); 
+  color: var(--primary-text-color);
+  /* Override generic styles to match Navbar buttons */
+  padding: 10px 20px; 
+  font-size: 16px; 
+  font-weight: 600; 
 }
+.editButton:hover { /* Add hover consistent with primary buttons */
+  background-color: var(--primary-color-hover);
+  opacity: 1; /* Ensure full opacity on hover, overriding generic .editButton:hover if it had opacity */
+}
+
 .saveButton {
   background-color: var(--success-color);
   color: var(--primary-text-color); /* Assuming white text on success */
