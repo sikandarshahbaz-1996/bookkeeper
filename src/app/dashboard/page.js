@@ -11,8 +11,8 @@ import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
 // Constants
 const areasOfExpertiseOptions = [
   "Tax Preparation & Planning", "Audit & Assurance", "Forensic Accounting",
-  "Management Accounting", "Bookkeeping Services", "Payroll Services",
-  "Financial Advisory", "Risk Management", "Corporate Finance",
+  "Management Accounting", "Bookkeeping Services", "Payroll Services", // These are 'areasOfExpertiseOptions', not 'servicesOfferedOptions'
+  "Financial Advisory", "Risk Management", "Corporate Finance",      // They are used for the 'Profile' tab.
   "Non-profit Accounting", "International Accounting", "Estate & Trust Planning"
 ];
 const languageOptions = [
@@ -27,10 +27,20 @@ const softwareProficiencyOptions = [
   "Sage Intacct", "NetSuite ERP", "Wave Accounting", "MYOB", "KashFlow",
   "FreeAgent", "SAP Business One", "Microsoft Dynamics 365"
 ];
+// Updated servicesOfferedOptions with minPrice
 const servicesOfferedOptions = [
-  "Bookkeeping", "Tax Preparation & Filing", "Payroll Processing", "Financial Statement Preparation",
-  "Audit Services", "Forensic Accounting", "Business Valuation", "Management Consulting",
-  "Budgeting & Forecasting", "Cash Flow Management", "IRS Representation", "Startup Advisory"
+  { name: "Bookkeeping", minPrice: 45 },
+  { name: "Tax Preparation & Filing", minPrice: 95 },
+  { name: "Payroll Processing", minPrice: 55 },
+  { name: "Financial Statement Preparation", minPrice: 85 },
+  { name: "Audit Services", minPrice: 225 },
+  { name: "Forensic Accounting", minPrice: 250 },
+  { name: "Business Valuation", minPrice: 175 },
+  { name: "Management Consulting", minPrice: 150 },
+  { name: "Budgeting & Forecasting", minPrice: 100 },
+  { name: "Cash Flow Management", minPrice: 115 },
+  { name: "IRS Representation", minPrice: 160 },
+  { name: "Startup Advisory", minPrice: 120 }
 ];
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const timeOptions = [];
@@ -223,7 +233,17 @@ function DashboardPage() {
       setProfileData(data.user);
       setEditData(data.user);
       const userTimezone = data.user.timezone || 'America/New_York';
-      const initialServices = Array.isArray(data.user.servicesOffered) ? data.user.servicesOffered.map(s => typeof s === 'string' ? { service: s, rate: '' } : ({ ...s, rate: s.rate !== undefined ? String(s.rate) : '' })) : [];
+      // Ensure services are initialized with name, rate, and minPrice
+      const initialServices = Array.isArray(data.user.servicesOffered) 
+        ? data.user.servicesOffered.map(s => {
+            const serviceOption = servicesOfferedOptions.find(opt => opt.name === (s.name || s.service)); // s.service for backward compatibility
+            return { 
+              name: serviceOption ? serviceOption.name : (s.name || s.service), 
+              rate: s.rate !== undefined ? String(s.rate) : '', 
+              minPrice: serviceOption ? serviceOption.minPrice : 0 
+            };
+          }) 
+        : [];
       let initialAvailability = data.user.availability && Array.isArray(data.user.availability) && data.user.availability.length === 7
         ? data.user.availability.map(day => ({ ...day, startTime: day.isAvailable && day.startTime ? convertFromUTCHHMm(day.startTime, userTimezone) : "09:00", endTime: day.isAvailable && day.endTime ? convertFromUTCHHMm(day.endTime, userTimezone) : "17:00" }))
         : daysOfWeek.map(day => ({ day, isAvailable: !['Saturday', 'Sunday'].includes(day), startTime: "09:00", endTime: "17:00" }));
@@ -270,31 +290,63 @@ function DashboardPage() {
   const handleCancelEdit = () => { setEditData(profileData); setIsEditing(false); setError(''); };
 
   const handleBusinessInputChange = (e) => { const {name,value}=e.target; setEditBusinessData(prev=>({...prev,[name]:value})); };
-  const handleBusinessCheckboxChange = (serviceName) => {
+  const handleBusinessCheckboxChange = (serviceNameFromOption) => {
     setEditBusinessData(prev => {
       const currentServices = prev.servicesOffered || [];
-      const existingServiceIndex = currentServices.findIndex(s => s.service === serviceName);
+      const existingServiceIndex = currentServices.findIndex(s => s.name === serviceNameFromOption); // Check by 'name'
       let newServices;
-      if (existingServiceIndex > -1) { newServices = currentServices.filter(s => s.service !== serviceName); setServiceRateErrors(prevE => {const nE={...prevE}; delete nE[serviceName]; return nE;}); }
-      else { newServices = [...currentServices, { service: serviceName, rate: '' }]; }
+      if (existingServiceIndex > -1) { 
+        newServices = currentServices.filter(s => s.name !== serviceNameFromOption); 
+        setServiceRateErrors(prevE => { const nE = { ...prevE }; delete nE[serviceNameFromOption]; return nE; }); 
+      } else { 
+        const serviceOption = servicesOfferedOptions.find(opt => opt.name === serviceNameFromOption);
+        newServices = [...currentServices, { name: serviceNameFromOption, rate: '', minPrice: serviceOption ? serviceOption.minPrice : 0 }]; 
+      }
       return { ...prev, servicesOffered: newServices };
     });
   };
   const handleServiceRateChange = (serviceName, rate) => {
-    setEditBusinessData(prev => ({ ...prev, servicesOffered: (prev.servicesOffered||[]).map(s => s.service === serviceName ? { ...s, rate } : s) }));
-    if (serviceRateErrors[serviceName]) setServiceRateErrors(prevE => {const nE={...prevE}; delete nE[serviceName]; return nE;});
+    setEditBusinessData(prev => ({ 
+      ...prev, 
+      servicesOffered: (prev.servicesOffered || []).map(s => s.name === serviceName ? { ...s, rate } : s) // Match by 'name'
+    }));
+    // Basic validation for format, minPrice validation happens on save
+    if (isNaN(parseFloat(rate)) && rate !== '') {
+        setServiceRateErrors(prevE => ({...prevE, [serviceName]: 'Rate must be a number.'}));
+    } else if (serviceRateErrors[serviceName]) {
+        setServiceRateErrors(prevE => { const nE = { ...prevE }; delete nE[serviceName]; return nE; });
+    }
   };
   const handleSaveBusinessChanges = async () => {
     if (!token || !editBusinessData) return;
-    const currentServiceRateErrors = {}; let hasErrors = false;
-    (editBusinessData.servicesOffered || []).forEach(item => { if (item.rate === '' || item.rate === null || isNaN(parseFloat(item.rate)) || parseFloat(item.rate) < 0) { currentServiceRateErrors[item.service] = 'Hourly rate must be a valid number.'; hasErrors = true; }});
+    const currentServiceRateErrors = {}; 
+    let hasErrors = false;
+    
+    (editBusinessData.servicesOffered || []).forEach(item => {
+      const serviceOption = servicesOfferedOptions.find(opt => opt.name === item.name);
+      const minPrice = serviceOption ? serviceOption.minPrice : 0;
+
+      if (item.rate === '' || item.rate === null || isNaN(parseFloat(item.rate))) { 
+        currentServiceRateErrors[item.name] = 'Hourly rate must be a valid number.'; 
+        hasErrors = true; 
+      } else if (parseFloat(item.rate) < minPrice) {
+        currentServiceRateErrors[item.name] = `Rate cannot be less than minimum $${minPrice}.`;
+        hasErrors = true;
+      }
+    });
+
     setServiceRateErrors(currentServiceRateErrors);
-    if (hasErrors) { toast.error('Please correct the errors in service rates.'); return; }
+    if (hasErrors) { 
+      toast.error('Please correct the errors in service rates.'); 
+      return; 
+    }
+
     setIsSaving(true); setError('');
+    // Ensure the payload uses "areasOfExpertise" with "name" and "hourlyRate"
     const businessPayload = {
       businessName: editBusinessData.businessName, businessAddress: editBusinessData.businessAddress,
       businessPhone: editBusinessData.businessPhone, businessEmail: editBusinessData.businessEmail,
-      servicesOffered: (editBusinessData.servicesOffered || []).map(s => ({ ...s, rate: parseFloat(s.rate) })),
+      areasOfExpertise: (editBusinessData.servicesOffered || []).map(s => ({ name: s.name, hourlyRate: parseFloat(s.rate) })), // Changed servicesOffered to areasOfExpertise
       availability: (editBusinessData.availability || []).map(day => ({ ...day, startTime: day.isAvailable ? convertToUTCHHMm(day.startTime, editBusinessData.timezone) : null, endTime: day.isAvailable ? convertToUTCHHMm(day.endTime, editBusinessData.timezone) : null })),
       timezone: editBusinessData.timezone,
     };
@@ -303,19 +355,39 @@ function DashboardPage() {
       const data = await response.json(); if (!response.ok) throw new Error(data.message || 'Failed to update business information.');
       setProfileData(data.user);
       const savedTimezone = data.user.timezone || editBusinessData.timezone;
-      const updatedServices = Array.isArray(data.user.servicesOffered) ? data.user.servicesOffered.map(s => ({...s, rate: s.rate!=null?String(s.rate):''})) : [];
+      // Re-map areasOfExpertise from API (name, hourlyRate) to local state (name, rate, minPrice)
+      const updatedServicesFromAPI = Array.isArray(data.user.areasOfExpertise) 
+        ? data.user.areasOfExpertise.map(s_api => {
+            const serviceOpt = servicesOfferedOptions.find(opt => opt.name === s_api.name);
+            return {
+              name: s_api.name,
+              rate: s_api.hourlyRate !== null && s_api.hourlyRate !== undefined ? String(s_api.hourlyRate) : '',
+              minPrice: serviceOpt ? serviceOpt.minPrice : 0
+            };
+          })
+        : [];
       const savedAvail = Array.isArray(data.user.availability) ? data.user.availability.map(d=>({...d, startTime:d.isAvailable&&d.startTime?convertFromUTCHHMm(d.startTime,savedTimezone):"09:00", endTime:d.isAvailable&&d.endTime?convertFromUTCHHMm(d.endTime,savedTimezone):"17:00"})) : editBusinessData.availability;
-      setEditBusinessData({
+      setEditBusinessData({ // Update local state for servicesOffered (which maps to areasOfExpertise)
         businessName:data.user.businessName||'', businessAddress:data.user.businessAddress||'',
         businessPhone:data.user.businessPhone||'', businessEmail:data.user.businessEmail||'',
-        servicesOffered:updatedServices, timezone:savedTimezone, availability:savedAvail
+        servicesOffered:updatedServicesFromAPI, timezone:savedTimezone, availability:savedAvail
       });
       setIsEditingBusiness(false); setServiceRateErrors({}); toast.success(data.message || 'Business information updated successfully!');
     } catch (err) { setError(err.message); toast.error(`Error updating business information: ${err.message}`); } finally { setIsSaving(false); }
   };
   const handleCancelBusinessEdit = () => {
     const currentTz = profileData?.timezone || 'America/New_York';
-    const resetSvc = Array.isArray(profileData?.servicesOffered) ? profileData.servicesOffered.map(s=>({...s, rate:s.rate!=null?String(s.rate):''})) : [];
+    // Reset services from profileData (areasOfExpertise), ensuring minPrice is included
+    const resetSvc = Array.isArray(profileData?.areasOfExpertise) 
+      ? profileData.areasOfExpertise.map(s_prof => {
+          const serviceOpt = servicesOfferedOptions.find(opt => opt.name === s_prof.name);
+          return {
+            name: s_prof.name,
+            rate: s_prof.hourlyRate !== null && s_prof.hourlyRate !== undefined ? String(s_prof.hourlyRate) : '',
+            minPrice: serviceOpt ? serviceOpt.minPrice : 0
+          };
+        })
+      : [];
     const resetAvail = Array.isArray(profileData?.availability) ? profileData.availability.map(d=>({...d, startTime:d.isAvailable&&d.startTime?convertFromUTCHHMm(d.startTime,currentTz):"09:00", endTime:d.isAvailable&&d.endTime?convertFromUTCHHMm(d.endTime,currentTz):"17:00"})) : daysOfWeek.map(day=>({day,isAvailable:!['Saturday','Sunday'].includes(day),startTime:"09:00",endTime:"17:00"}));
     setEditBusinessData({
       businessName:profileData?.businessName||'', businessAddress:profileData?.businessAddress||'',
@@ -427,23 +499,34 @@ function DashboardPage() {
                 <h3>Services Offered</h3>
                 {isEditingBusiness ? (
                   <div className={styles.checkboxGridServices}>
-                    {servicesOfferedOptions.map(serviceName => {
-                      const serviceData = (editBusinessData.servicesOffered || []).find(s => s.service === serviceName);
+                    {servicesOfferedOptions.map(serviceOption => { // Iterate over options with minPrice
+                      const serviceData = (editBusinessData.servicesOffered || []).find(s => s.name === serviceOption.name); // Match by name
                       const isChecked = !!serviceData;
                       return (
-                        <div key={serviceName} className={styles.serviceRateItem}>
-                          <label className={styles.checkboxLabel}><input type="checkbox" checked={isChecked} onChange={() => handleBusinessCheckboxChange(serviceName)} /> {serviceName}</label>
+                        <div key={serviceOption.name} className={styles.serviceRateItem}>
+                          <label className={styles.checkboxLabel}>
+                            <input type="checkbox" checked={isChecked} onChange={() => handleBusinessCheckboxChange(serviceOption.name)} /> 
+                            {serviceOption.name} (Min. ${serviceOption.minPrice}/hr)
+                          </label>
                           {isChecked && (
                             <div className={styles.rateInputContainer}>
-                              <input type="number" placeholder="Hourly Rate" value={serviceData.rate || ''} onChange={(e) => handleServiceRateChange(serviceName, e.target.value)} className={`${styles.input} ${styles.rateInput}`} min="0" />
-                              {serviceRateErrors[serviceName] && <p className={styles.inlineError}>{serviceRateErrors[serviceName]}</p>}
+                              <input 
+                                type="number" 
+                                placeholder="Your Rate" 
+                                value={serviceData.rate || ''} 
+                                onChange={(e) => handleServiceRateChange(serviceOption.name, e.target.value)} 
+                                className={`${styles.input} ${styles.rateInput}`} 
+                                min={serviceOption.minPrice} // HTML5 min attribute
+                                step="0.01"
+                              />
+                              {serviceRateErrors[serviceOption.name] && <p className={styles.inlineError}>{serviceRateErrors[serviceOption.name]}</p>}
                             </div>
                           )}
                         </div>
                       );
                     })}
                   </div>
-                ) : ( profileData.servicesOffered?.length > 0 ? <ul>{profileData.servicesOffered.map((s, i) => <li key={i}>{s.service}: {s.rate != null && s.rate !== '' ? `$${s.rate}/hr` : <em className={styles.emptyField}>No rate set</em>}</li>)}</ul> : <p><em className={styles.emptyField}>No services listed.</em></p> )}
+                ) : ( profileData.areasOfExpertise?.length > 0 ? <ul>{profileData.areasOfExpertise.map((s, i) => <li key={i}>{s.name}: {s.hourlyRate != null && s.hourlyRate !== '' ? `$${s.hourlyRate}/hr` : <em className={styles.emptyField}>No rate set</em>}</li>)}</ul> : <p><em className={styles.emptyField}>No services listed.</em></p> )}
               </div>
               <div className={styles.infoBlock}>
                 <h3>Availability</h3>

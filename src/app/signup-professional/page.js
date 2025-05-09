@@ -1,17 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import styles from './page.module.css';
 
-// Placeholder data (would ideally come from a config or API)
 const areasOfExpertiseOptions = [
-  "Tax Preparation & Planning", "Audit & Assurance", "Forensic Accounting",
-  "Management Accounting", "Bookkeeping Services", "Payroll Services",
-  "Financial Advisory", "Risk Management", "Corporate Finance",
-  "Non-profit Accounting", "International Accounting", "Estate & Trust Planning"
+  { name: "Bookkeeping", minPrice: 45 },
+  { name: "Tax Preparation & Filing", minPrice: 95 },
+  { name: "Payroll Processing", minPrice: 55 },
+  { name: "Financial Statement Preparation", minPrice: 85 },
+  { name: "Audit Services", minPrice: 225 },
+  { name: "Forensic Accounting", minPrice: 250 },
+  { name: "Business Valuation", minPrice: 175 },
+  { name: "Management Consulting", minPrice: 150 },
+  { name: "Budgeting & Forecasting", minPrice: 100 },
+  { name: "Cash Flow Management", minPrice: 115 },
+  { name: "IRS Representation", minPrice: 160 },
+  { name: "Startup Advisory", minPrice: 120 }
 ];
 
 const languageOptions = [
@@ -28,7 +35,6 @@ const softwareProficiencyOptions = [
   "FreeAgent", "SAP Business One", "Microsoft Dynamics 365"
 ];
 
-// Password validation function (same as user signup)
 const validatePassword = (password) => {
   if (password.length < 6) {
     return 'Password must be at least 6 characters long.';
@@ -52,13 +58,13 @@ export default function SignUpProfessionalPage() {
     email: '',
     phoneNumber: '',
     password: '',
-    qualifications: [''], 
-    experience: [''],     
-    areasOfExpertise: [],
+    qualifications: [''],
+    experience: [''],
+    areasOfExpertise: [], // Will store objects: { name, minPrice, hourlyRate }
     languagesSpoken: [],
     softwareProficiency: []
   });
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -82,12 +88,40 @@ export default function SignUpProfessionalPage() {
 
   const removeDynamicListItem = (listName, index) => {
     const newList = [...formData[listName]];
-    if (newList.length > 1) { 
+    if (newList.length > 1) {
       newList.splice(index, 1);
       setFormData(prev => ({ ...prev, [listName]: newList }));
     }
   };
 
+  const handleExpertiseCheckboxChange = (serviceName, minPrice, isChecked) => {
+    setFormData(prev => {
+      const currentExpertise = prev.areasOfExpertise;
+      if (isChecked) {
+        // Add service if checked
+        return {
+          ...prev,
+          areasOfExpertise: [...currentExpertise, { name: serviceName, minPrice, hourlyRate: '' }]
+        };
+      } else {
+        // Remove service if unchecked
+        return {
+          ...prev,
+          areasOfExpertise: currentExpertise.filter(item => item.name !== serviceName)
+        };
+      }
+    });
+  };
+
+  const handleExpertiseRateChange = (serviceName, rate) => {
+    setFormData(prev => ({
+      ...prev,
+      areasOfExpertise: prev.areasOfExpertise.map(item =>
+        item.name === serviceName ? { ...item, hourlyRate: rate } : item
+      )
+    }));
+  };
+  
   const handleCheckboxChange = (listName, value) => {
     setFormData(prev => {
       const currentList = prev[listName];
@@ -103,7 +137,6 @@ export default function SignUpProfessionalPage() {
     e.preventDefault();
     setLoading(true);
 
-    // Validate password
     const passwordError = validatePassword(formData.password);
     if (passwordError) {
       toast.error(passwordError);
@@ -111,12 +144,30 @@ export default function SignUpProfessionalPage() {
       return;
     }
 
-    // Filter out empty strings from dynamic lists
+    // Validate hourly rates for selected services
+    for (const service of formData.areasOfExpertise) {
+      if (!service.hourlyRate || parseFloat(service.hourlyRate) < service.minPrice) {
+        toast.error(`Hourly rate for ${service.name} must be at least $${service.minPrice}.`);
+        setLoading(false);
+        return;
+      }
+      if (isNaN(parseFloat(service.hourlyRate))) {
+        toast.error(`Please enter a valid number for the hourly rate of ${service.name}.`);
+        setLoading(false);
+        return;
+      }
+    }
+    
+    // Prepare payload, ensuring hourlyRate is a number
     const payload = {
       ...formData,
       role: 'professional',
       qualifications: formData.qualifications.filter(q => q.trim() !== ''),
       experience: formData.experience.filter(exp => exp.trim() !== ''),
+      areasOfExpertise: formData.areasOfExpertise.map(s => ({
+        name: s.name,
+        hourlyRate: parseFloat(s.hourlyRate) // Ensure it's a number
+      })),
     };
 
     try {
@@ -135,7 +186,7 @@ export default function SignUpProfessionalPage() {
       }
 
       toast.info('Signup successful! Please check your email for a verification code.');
-      router.push(`/verify-email?email=${encodeURIComponent(payload.email)}`); 
+      router.push(`/verify-email?email=${encodeURIComponent(payload.email)}`);
 
     } catch (err) {
       toast.error(err.message || 'An unexpected error occurred.');
@@ -162,21 +213,21 @@ export default function SignUpProfessionalPage() {
             <label htmlFor="phoneNumber" className={styles.label}>Phone Number</label>
             <input type="tel" id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} className={styles.input} />
           </div>
-          <div className={`${styles.inputGroup} ${styles.passwordGroup}`}> {/* Added passwordGroup class */}
+          <div className={`${styles.inputGroup} ${styles.passwordGroup}`}>
             <label htmlFor="password" className={styles.label}>Password</label>
-             <div className={styles.passwordInputWrapper}> {/* Wrapper for input and button */}
-              <input 
-                type={showPassword ? 'text' : 'password'} 
-                id="password" 
-                name="password" 
-                value={formData.password} 
-                onChange={handleInputChange} 
-                className={styles.input} 
-                required 
+            <div className={styles.passwordInputWrapper}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={styles.input}
+                required
               />
-              <button 
-                type="button" 
-                onClick={() => setShowPassword(!showPassword)} 
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
                 className={styles.togglePasswordButton}
               >
                 {showPassword ? 'Hide' : 'Show'}
@@ -226,17 +277,41 @@ export default function SignUpProfessionalPage() {
 
           {/* Areas of Expertise */}
           <div className={styles.sectionTitle}>Areas of Expertise</div>
-          <div className={styles.checkboxGrid}>
-            {areasOfExpertiseOptions.map(area => (
-              <label key={area} className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={formData.areasOfExpertise.includes(area)}
-                  onChange={() => handleCheckboxChange('areasOfExpertise', area)}
-                /> {area}
-              </label>
-            ))}
+          <div className={styles.expertiseGrid}>
+            {areasOfExpertiseOptions.map(service => {
+              const isSelected = formData.areasOfExpertise.some(s => s.name === service.name);
+              const selectedServiceData = formData.areasOfExpertise.find(s => s.name === service.name);
+              return (
+                <div key={service.name} className={styles.expertiseItem}>
+                  <label className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => handleExpertiseCheckboxChange(service.name, service.minPrice, e.target.checked)}
+                    /> {service.name} (Min. ${service.minPrice}/hr)
+                  </label>
+                  {isSelected && (
+                    <div className={styles.rateInputGroup}>
+                      <label htmlFor={`${service.name}-rate`} className={styles.rateLabel}>Your Rate ($/hr):</label>
+                      <input
+                        type="number"
+                        id={`${service.name}-rate`}
+                        name={`${service.name}-rate`}
+                        value={selectedServiceData?.hourlyRate || ''}
+                        onChange={(e) => handleExpertiseRateChange(service.name, e.target.value)}
+                        className={styles.rateInput}
+                        placeholder={`e.g. ${service.minPrice}`}
+                        min={service.minPrice} // HTML5 min attribute for basic validation
+                        step="0.01" // Allow decimal inputs
+                        required // Ensure a rate is entered if service is selected
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
+
 
           {/* Languages Spoken */}
           <div className={styles.sectionTitle}>Languages Spoken</div>

@@ -6,6 +6,22 @@ import { ObjectId } from 'mongodb'; // Import ObjectId
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// Authoritative list of services and their minimum prices for server-side validation
+const servicesOfferedOptions = [
+  { name: "Bookkeeping", minPrice: 45 },
+  { name: "Tax Preparation & Filing", minPrice: 95 },
+  { name: "Payroll Processing", minPrice: 55 },
+  { name: "Financial Statement Preparation", minPrice: 85 },
+  { name: "Audit Services", minPrice: 225 },
+  { name: "Forensic Accounting", minPrice: 250 },
+  { name: "Business Valuation", minPrice: 175 },
+  { name: "Management Consulting", minPrice: 150 },
+  { name: "Budgeting & Forecasting", minPrice: 100 },
+  { name: "Cash Flow Management", minPrice: 115 },
+  { name: "IRS Representation", minPrice: 160 },
+  { name: "Startup Advisory", minPrice: 120 }
+];
+
 // Helper function to verify token and get user ID
 async function verifyTokenAndGetUser(request) {
     const authHeader = request.headers.get('authorization');
@@ -86,7 +102,8 @@ export async function PUT(request) {
             businessAddress: updateData.businessAddress,
             businessPhone: updateData.businessPhone,
             businessEmail: updateData.businessEmail,
-            servicesOffered: updateData.servicesOffered, 
+            // Expect 'areasOfExpertise' from client, consistent with signup and other parts of the app
+            areasOfExpertise: updateData.areasOfExpertise, 
             timezone: updateData.timezone, // Add timezone
             availability: updateData.availability, // Add availability
         }),
@@ -109,16 +126,54 @@ export async function PUT(request) {
         }
     });
 
-    // Validate servicesOffered structure
-    if (allowedUpdates.servicesOffered !== undefined) {
-        if (!Array.isArray(allowedUpdates.servicesOffered)) {
-            console.warn(`Invalid non-array data provided for servicesOffered. Field will be ignored.`);
-            delete allowedUpdates.servicesOffered;
+    // Validate areasOfExpertise structure and minimum rates
+    if (allowedUpdates.areasOfExpertise !== undefined) {
+        if (!Array.isArray(allowedUpdates.areasOfExpertise)) {
+            // If not an array, it's an invalid format.
+            // We could return an error or just ignore it. For now, let's ignore and log.
+            console.warn(`Invalid non-array data provided for areasOfExpertise. Field will be ignored.`);
+            delete allowedUpdates.areasOfExpertise;
         } else {
-            allowedUpdates.servicesOffered = allowedUpdates.servicesOffered.filter(item => 
-                item && typeof item.service === 'string' && item.service.trim() !== '' &&
-                typeof item.rate === 'number' && !isNaN(item.rate) && item.rate >= 0
-            );
+            const validatedServices = [];
+            let validationFailed = false;
+            for (const item of allowedUpdates.areasOfExpertise) {
+                // Ensure item has 'name' and 'hourlyRate'
+                if (!item || typeof item.name !== 'string' || item.name.trim() === '' || typeof item.hourlyRate !== 'number' || isNaN(item.hourlyRate)) {
+                    console.warn('Invalid service item structure:', item);
+                    // Potentially return an error if strict validation is required for each item
+                    // For now, we'll filter out malformed items.
+                    // If a single malformed item should invalidate the whole update, set validationFailed = true here.
+                    continue; 
+                }
+
+                const serviceOption = servicesOfferedOptions.find(opt => opt.name === item.name);
+                if (!serviceOption) {
+                    console.warn(`Unknown service name: ${item.name}. This service will be ignored.`);
+                    // If unknown services should cause an error:
+                    // return NextResponse.json({ message: `Unknown service: ${item.name}` }, { status: 400 });
+                    continue; // Skip unknown services
+                }
+
+                if (item.hourlyRate < serviceOption.minPrice) {
+                    // This is a hard validation failure. Return an error to the client.
+                    return NextResponse.json({ message: `Hourly rate for ${item.name} ($${item.hourlyRate}) cannot be less than minimum $${serviceOption.minPrice}.` }, { status: 400 });
+                }
+                
+                // Add valid service to the list
+                validatedServices.push({ name: item.name, hourlyRate: item.hourlyRate });
+            }
+            // If we decided to allow partial updates (filtering out bad items), assign validatedServices
+            // If any item caused a hard validation failure (like rate < minPrice), we would have already returned.
+            allowedUpdates.areasOfExpertise = validatedServices;
+            
+            // If, after filtering, no valid services remain and the original array was not empty,
+            // it might indicate a problem. Decide if this should be an error or just an empty array.
+            if (allowedUpdates.areasOfExpertise.length === 0 && updateData.areasOfExpertise.length > 0) {
+                // This means all provided services were invalid in some way (e.g., unknown names)
+                // but didn't hit the hard validation error for minPrice.
+                // Depending on requirements, this could be an error or allowed.
+                // For now, allow an empty array if all were filtered out due to being unknown.
+            }
         }
     }
 

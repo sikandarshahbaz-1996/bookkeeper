@@ -49,7 +49,7 @@ function GenerateQuoteContent() {
   }, [id]);
 
   const handleAddService = () => {
-    if (!professional?.servicesOffered || professional.servicesOffered.length === 0) {
+    if (!professional?.areasOfExpertise || professional.areasOfExpertise.length === 0) {
       toast.warn("This professional currently offers no services to select.");
       return;
     }
@@ -57,8 +57,8 @@ function GenerateQuoteContent() {
       ...selectedServices,
       {
         id: generateUniqueId(), // Unique ID for this instance of service selection
-        serviceName: professional.servicesOffered[0].service, // Default to first service
-        rate: professional.servicesOffered[0].rate,
+        serviceName: professional.areasOfExpertise[0].name, // Default to first service
+        rate: professional.areasOfExpertise[0].hourlyRate,
         transactions: '',
         bankReconciliation: 'no',
         financialStatements: 'no',
@@ -71,8 +71,8 @@ function GenerateQuoteContent() {
       selectedServices.map(s => {
         if (s.id === instanceId) {
           if (field === 'serviceName') {
-            const selectedServiceDetail = professional.servicesOffered.find(pSvc => pSvc.service === value);
-            return { ...s, serviceName: value, rate: selectedServiceDetail?.rate || 0 };
+            const selectedServiceDetail = professional.areasOfExpertise.find(pSvc => pSvc.name === value);
+            return { ...s, serviceName: value, rate: selectedServiceDetail?.hourlyRate || 0 };
           }
           return { ...s, [field]: value };
         }
@@ -165,9 +165,9 @@ function GenerateQuoteContent() {
                 value={serviceInstance.serviceName}
                 onChange={(e) => handleServiceChange(serviceInstance.id, 'serviceName', e.target.value)}
               >
-                {professional.servicesOffered.map(profService => (
-                  <option key={profService.service} value={profService.service}>
-                    {profService.service} (${profService.rate}/hr)
+                {professional.areasOfExpertise.map(profService => (
+                  <option key={profService.name} value={profService.name}>
+                    {profService.name} (${profService.hourlyRate}/hr)
                   </option>
                 ))}
               </select>

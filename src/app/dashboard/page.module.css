@@ -285,7 +285,7 @@
 
 .inlineError {
   font-size: 12px;
-  color: var(--error-color); 
+  color: var(--error-color) !important; 
   margin-top: 2px; /* Small space above error message */
 }
 

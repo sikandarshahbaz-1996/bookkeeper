@@ -115,13 +115,12 @@ function ProfessionalProfileContent() {
           {(professional.businessEmail || professional.email) && <DetailItem label="Email" value={<a href={`mailto:${professional.businessEmail || professional.email}`} className={styles.contactLink}>{professional.businessEmail || professional.email}</a>} icon={<FaEnvelope />} />}
           {professional.languagesSpoken && professional.languagesSpoken.length > 0 && <DetailItem label="Languages" value={professional.languagesSpoken.join(', ')} icon={<FaGlobe />} />}
           {professional.qualifications && professional.qualifications.length > 0 && <DetailItem label="Qualifications" value={professional.qualifications.join(', ')} icon={<FaUserTie />} />}
-          {professional.areasOfExpertise && professional.areasOfExpertise.length > 0 && <DetailItem label="Areas of Expertise" value={professional.areasOfExpertise.join(', ')} icon={<FaTools />} />}
           {professional.softwareProficiency && professional.softwareProficiency.length > 0 && <DetailItem label="Software Proficiency" value={professional.softwareProficiency.join(', ')} icon={<FaTools />} />}
         </div>
         
-        {professional.servicesOffered && professional.servicesOffered.length > 0 && (
-          // Use the DetailItem directly for services, it will handle the special rendering
-          <DetailItem label="Services Offered" value={professional.servicesOffered} icon={<FaTools />} isList={true} itemProperty="service" rateProperty="rate" />
+        {professional.areasOfExpertise && professional.areasOfExpertise.length > 0 && (
+          // Display services with their hourly rates
+          <DetailItem label="Services Offered" value={professional.areasOfExpertise} icon={<FaTools />} isList={true} itemProperty="name" rateProperty="hourlyRate" />
         )}
 
         {/* serviceAreas is not in the sample API response, remove or adapt if it exists */}
