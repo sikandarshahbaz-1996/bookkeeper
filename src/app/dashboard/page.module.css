@@ -395,6 +395,55 @@
   border-bottom-color: var(--primary-color); /* Active tab indicator */
 }
 
+/* Search Bar Styles */
+.searchContainer {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: var(--card-background-color);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+  max-width: 800px; /* Align with profileSection width */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.searchForm {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.searchInput {
+  flex-grow: 1;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 1px solid var(--input-border-color);
+  background-color: var(--input-background-color);
+  color: var(--input-text-color);
+  border-radius: 6px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.searchInput:focus {
+  border-color: var(--input-focus-border-color);
+  outline: none;
+  box-shadow: var(--input-focus-box-shadow);
+}
+
+.searchButton {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.searchButton:hover {
+  background-color: var(--primary-color-hover);
+}
+
 
 /* Add media queries for responsiveness */
 @media (max-width: 768px) {

@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation'; // Already present
 import styles from './page.module.css';
 import { useAuth } from '@/context/AuthContext';
 import withAuth from '@/components/withAuth';
 import { toast } from 'react-toastify';
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
 
-// Constants (assuming these are correct from previous versions)
+// Constants
 const areasOfExpertiseOptions = [
   "Tax Preparation & Planning", "Audit & Assurance", "Forensic Accounting",
   "Management Accounting", "Bookkeeping Services", "Payroll Services",
@@ -50,7 +51,7 @@ try {
   commonTimeZones = ['UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris'];
 }
 
-// Helper Functions (using Intl API)
+// Helper Functions
 const convertToUTCHHMm = (timeString, timezone) => {
   if (!timeString || !timezone) return null;
   try {
@@ -192,10 +193,13 @@ const libraries = ['places'];
 
 function DashboardPage() {
   const { token, logout } = useAuth();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+
   const [activeTab, setActiveTab] = useState('profile');
   const [profileData, setProfileData] = useState(null);
   const [editData, setEditData] = useState(null);
-  const [isEditing, setIsEditing] = useState(false); // This state is now passed to ProfileContent
+  const [isEditing, setIsEditing] = useState(false);
   const [editBusinessData, setEditBusinessData] = useState({
     businessName: '', businessAddress: '', businessPhone: '', businessEmail: '',
     servicesOffered: [], timezone: 'America/New_York',
@@ -324,10 +328,32 @@ function DashboardPage() {
   const handleDayAvailabilityToggle = (dayName) => { setEditBusinessData(prev => ({ ...prev, availability: prev.availability.map(d => d.day===dayName ? {...d, isAvailable:!d.isAvailable} : d)})); };
   const handleTimeChange = (dayName,timeType,value) => { setEditBusinessData(prev => ({ ...prev, availability: prev.availability.map(d => d.day===dayName ? {...d, [timeType]:value} : d)})); };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search-results?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
   if (isLoading || !editBusinessData || !profileData) return <div className={styles.container}><p>Loading dashboard...</p></div>;
 
   return (
     <div className={styles.container}>
+      {profileData.role === 'customer' && (
+        <div className={styles.searchContainer}>
+          <form onSubmit={handleSearch} className={styles.searchForm}>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search for professionals (e.g., by name, service, location)"
+              className={styles.searchInput}
+            />
+            <button type="submit" className={styles.searchButton}>Go</button>
+          </form>
+        </div>
+      )}
+
       {profileData.role === 'professional' && (
         <div className={styles.tabs}>
           <button className={`${styles.tabButton} ${activeTab === 'profile' ? styles.activeTab : ''}`} onClick={() => setActiveTab('profile')}>Profile</button>
