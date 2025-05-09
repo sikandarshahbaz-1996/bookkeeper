@@ -4,7 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation'; // Import useRouter
 import Link from 'next/link';
 import styles from './page.module.css';
-import { FaArrowLeft, FaMapMarkerAlt, FaBriefcase, FaClock, FaGlobe, FaPhone, FaRegBuilding, FaUserTie, FaTools, FaStreetView, FaInfoCircle } from 'react-icons/fa'; // Added FaArrowLeft
+import { FaArrowLeft, FaMapMarkerAlt, FaBriefcase, FaClock, FaGlobe, FaPhone, FaRegBuilding, FaUserTie, FaTools, FaStreetView, FaInfoCircle, FaEnvelope } from 'react-icons/fa'; // Added FaEnvelope
 
 function ProfessionalProfileContent() {
   const params = useParams();
@@ -111,14 +111,12 @@ function ProfessionalProfileContent() {
           {/* For now, let's skip complex availability rendering on this pass, can be added later */}
           {professional.phoneNumber && <DetailItem label="Phone" value={<a href={`tel:${professional.phoneNumber}`} className={styles.contactLink}>{professional.phoneNumber}</a>} icon={<FaPhone />} />}
           {professional.website && <DetailItem label="Website" value={<a href={professional.website && professional.website.startsWith('http') ? professional.website : `http://${professional.website}`} target="_blank" rel="noopener noreferrer" className={styles.contactLink}>{professional.website}</a>} icon={<FaGlobe />} />}
+          {/* Email now comes before Languages */}
+          {(professional.businessEmail || professional.email) && <DetailItem label="Email" value={<a href={`mailto:${professional.businessEmail || professional.email}`} className={styles.contactLink}>{professional.businessEmail || professional.email}</a>} icon={<FaEnvelope />} />}
           {professional.languagesSpoken && professional.languagesSpoken.length > 0 && <DetailItem label="Languages" value={professional.languagesSpoken.join(', ')} icon={<FaGlobe />} />}
           {professional.qualifications && professional.qualifications.length > 0 && <DetailItem label="Qualifications" value={professional.qualifications.join(', ')} icon={<FaUserTie />} />}
           {professional.areasOfExpertise && professional.areasOfExpertise.length > 0 && <DetailItem label="Areas of Expertise" value={professional.areasOfExpertise.join(', ')} icon={<FaTools />} />}
-          {professional.softwareProficiency && professional.softwareProficiency.length > 0 && 
-            <div className={styles.fullWidthDetailItem}>
-              <DetailItem label="Software Proficiency" value={professional.softwareProficiency.join(', ')} icon={<FaTools />} />
-            </div>
-          }
+          {professional.softwareProficiency && professional.softwareProficiency.length > 0 && <DetailItem label="Software Proficiency" value={professional.softwareProficiency.join(', ')} icon={<FaTools />} />}
         </div>
         
         {professional.servicesOffered && professional.servicesOffered.length > 0 && (
