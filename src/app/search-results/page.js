@@ -131,8 +131,8 @@ function SearchResultsContent() {
                   {/* prof.profession is not in the sample, will not render if undefined */}
                   {prof.profession && <p className={styles.professionInCard}>{prof.profession}</p>}
                   {/* Display businessName if it exists and is different from the main name, or if prof.name is not present */}
-                  {prof.businessName && prof.name !== prof.businessName && <p className={styles.businessNameInCard}>Company: {prof.businessName}</p>}
-                  {prof.businessName && !prof.name && <p className={styles.businessNameInCard}>Company: {prof.businessName}</p>}
+                  {prof.businessName && prof.name !== prof.businessName && <p className={styles.businessNameInCard}><strong>Company: </strong>{prof.businessName}</p>}
+                  {prof.businessName && !prof.name && <p className={styles.businessNameInCard}><strong>Company: </strong>{prof.businessName}</p>}
                                     
                   {prof.businessAddress && <p><strong>Location:</strong> {prof.businessAddress.split(',').slice(0, 2).join(',')}</p>} {/* Show first 2 parts of address for brevity */}
                   

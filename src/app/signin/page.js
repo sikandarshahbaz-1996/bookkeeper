@@ -101,7 +101,7 @@ export default function SignInPage() {
         {/* Error messages are now handled by toast */}
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputGroup}>
-            <label htmlFor="email" className={styles.label}>Email</label>
+            <label htmlFor="email" className={styles.label}>Personal or Business Email</label>
             <input 
               type="email" 
               id="email" 

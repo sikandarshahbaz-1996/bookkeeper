@@ -112,7 +112,7 @@ function ProfessionalProfileContent() {
           {professional.phoneNumber && <DetailItem label="Phone" value={<a href={`tel:${professional.phoneNumber}`} className={styles.contactLink}>{professional.phoneNumber}</a>} icon={<FaPhone />} />}
           {professional.website && <DetailItem label="Website" value={<a href={professional.website && professional.website.startsWith('http') ? professional.website : `http://${professional.website}`} target="_blank" rel="noopener noreferrer" className={styles.contactLink}>{professional.website}</a>} icon={<FaGlobe />} />}
           {/* Email now comes before Languages */}
-          {(professional.businessEmail || professional.email) && <DetailItem label="Email" value={<a href={`mailto:${professional.businessEmail || professional.email}`} className={styles.contactLink}>{professional.businessEmail || professional.email}</a>} icon={<FaEnvelope />} />}
+          {(professional.businessEmail || professional.email) && <DetailItem label={professional.businessEmail ? "Business Email" : "Personal Email"} value={<a href={`mailto:${professional.businessEmail || professional.email}`} className={styles.contactLink}>{professional.businessEmail || professional.email}</a>} icon={<FaEnvelope />} />}
           {professional.languagesSpoken && professional.languagesSpoken.length > 0 && <DetailItem label="Languages" value={professional.languagesSpoken.join(', ')} icon={<FaGlobe />} />}
           {professional.qualifications && professional.qualifications.length > 0 && <DetailItem label="Qualifications" value={professional.qualifications.join(', ')} icon={<FaUserTie />} />}
           {/* Display general areas of expertise (strings) */}

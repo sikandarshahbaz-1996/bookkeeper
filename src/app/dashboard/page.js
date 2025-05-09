@@ -131,7 +131,7 @@ const ProfileContent = ({
       </div>
       <div className={styles.infoBlock}>
         <h3>Basic Information</h3>
-        <div className={styles.formRow}><label><strong>Email:</strong></label><span>{profileData.email}</span></div>
+        <div className={styles.formRow}><label><strong>Personal Email:</strong></label><span>{profileData.email}</span></div>
         <div className={styles.formRow}><label><strong>Role:</strong></label><span>{profileData.role}</span></div>
         <div className={styles.formRow}>
           <label htmlFor="name"><strong>Name:</strong></label>
@@ -555,7 +555,7 @@ function DashboardPage() {
                   {isEditingBusiness ? <input type="tel" id="businessPhone" name="businessPhone" value={editBusinessData.businessPhone || ''} onChange={handleBusinessInputChange} className={styles.input} /> : <span>{profileData.businessPhone || <em className={styles.emptyField}>empty</em>}</span>}
                 </div>
                 <div className={styles.formRow}>
-                  <label htmlFor="businessEmail"><strong>Email:</strong></label>
+                  <label htmlFor="businessEmail"><strong>Business Email:</strong></label>
                   {isEditingBusiness ? <input type="email" id="businessEmail" name="businessEmail" value={editBusinessData.businessEmail || ''} onChange={handleBusinessInputChange} className={styles.input} /> : <span>{profileData.businessEmail || <em className={styles.emptyField}>empty</em>}</span>}
                 </div>
               </div>

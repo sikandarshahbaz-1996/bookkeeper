@@ -85,7 +85,7 @@ export default function SignUpUserPage() {
             <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} className={styles.input} required />
           </div>
           <div className={styles.inputGroup}>
-            <label htmlFor="email" className={styles.label}>Email Address</label>
+            <label htmlFor="email" className={styles.label}>Personal Email Address</label>
             <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} className={styles.input} required />
           </div>
           <div className={`${styles.inputGroup} ${styles.passwordGroup}`}> {/* Added passwordGroup class */}

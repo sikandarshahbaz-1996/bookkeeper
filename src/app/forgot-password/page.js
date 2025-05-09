@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
         </p>
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputGroup}>
-            <label htmlFor="email" className={styles.label}>Email Address</label>
+            <label htmlFor="email" className={styles.label}>Personal or Business Email Address</label>
             <input
               type="email"
               id="email"
