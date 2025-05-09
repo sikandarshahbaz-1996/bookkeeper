@@ -114,7 +114,11 @@ function ProfessionalProfileContent() {
           {professional.languagesSpoken && professional.languagesSpoken.length > 0 && <DetailItem label="Languages" value={professional.languagesSpoken.join(', ')} icon={<FaGlobe />} />}
           {professional.qualifications && professional.qualifications.length > 0 && <DetailItem label="Qualifications" value={professional.qualifications.join(', ')} icon={<FaUserTie />} />}
           {professional.areasOfExpertise && professional.areasOfExpertise.length > 0 && <DetailItem label="Areas of Expertise" value={professional.areasOfExpertise.join(', ')} icon={<FaTools />} />}
-          {professional.softwareProficiency && professional.softwareProficiency.length > 0 && <DetailItem label="Software Proficiency" value={professional.softwareProficiency.join(', ')} icon={<FaTools />} />}
+          {professional.softwareProficiency && professional.softwareProficiency.length > 0 && 
+            <div className={styles.fullWidthDetailItem}>
+              <DetailItem label="Software Proficiency" value={professional.softwareProficiency.join(', ')} icon={<FaTools />} />
+            </div>
+          }
         </div>
         
         {professional.servicesOffered && professional.servicesOffered.length > 0 && (

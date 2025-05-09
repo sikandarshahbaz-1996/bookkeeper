@@ -86,6 +86,17 @@
   padding: 1rem 1.5rem;
   border-radius: 6px;
   border: 1px solid var(--border-color);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.detailItem:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--card-shadow); /* Use existing card shadow for consistency or define a lighter one */
+  border-color: var(--primary-color-light, var(--primary-color)); /* Use a light variant of primary or primary itself */
+}
+
+.fullWidthDetailItem {
+  grid-column: 1 / -1; /* Make this item span all columns */
 }
 
 .detailLabel {
@@ -133,6 +144,13 @@
   padding: 0.6rem 0.2rem; /* Less padding if it's inside a detailItem already padded */
   border-bottom: 1px solid var(--border-color);
   font-size: 1rem;
+  transition: background-color 0.2s ease-in-out;
+  border-radius: 4px; /* Add some radius for hover effect */
+  margin: 0 -0.2rem; /* Counteract padding for full-width hover if needed */
+}
+
+.serviceListItem:hover {
+  background-color: var(--background-color); /* Use main page background for subtle hover, or a light primary */
 }
 
 .serviceListItem:last-child {
