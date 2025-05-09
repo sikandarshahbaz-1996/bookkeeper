@@ -55,7 +55,7 @@ function ProfessionalProfileContent() {
 
   const DetailItem = ({ label, value, icon, isList = false, itemProperty = null, rateProperty = null }) => {
     // Special rendering for services with rates
-    if (label === "Services Offered" && isList && Array.isArray(value)) {
+    if (label === "Services Offered (with rates)" && isList && Array.isArray(value)) {
       return (
         <div className={styles.detailItem}>
           <span className={styles.detailLabel}>{icon} {label}</span>
@@ -115,12 +115,14 @@ function ProfessionalProfileContent() {
           {(professional.businessEmail || professional.email) && <DetailItem label="Email" value={<a href={`mailto:${professional.businessEmail || professional.email}`} className={styles.contactLink}>{professional.businessEmail || professional.email}</a>} icon={<FaEnvelope />} />}
           {professional.languagesSpoken && professional.languagesSpoken.length > 0 && <DetailItem label="Languages" value={professional.languagesSpoken.join(', ')} icon={<FaGlobe />} />}
           {professional.qualifications && professional.qualifications.length > 0 && <DetailItem label="Qualifications" value={professional.qualifications.join(', ')} icon={<FaUserTie />} />}
+          {/* Display general areas of expertise (strings) */}
+          {professional.areasOfExpertise && professional.areasOfExpertise.length > 0 && <DetailItem label="General Expertise" value={professional.areasOfExpertise.join(', ')} icon={<FaTools />} />}
           {professional.softwareProficiency && professional.softwareProficiency.length > 0 && <DetailItem label="Software Proficiency" value={professional.softwareProficiency.join(', ')} icon={<FaTools />} />}
         </div>
         
-        {professional.areasOfExpertise && professional.areasOfExpertise.length > 0 && (
-          // Display services with their hourly rates
-          <DetailItem label="Services Offered" value={professional.areasOfExpertise} icon={<FaTools />} isList={true} itemProperty="name" rateProperty="hourlyRate" />
+        {/* Display servicesOffered (objects with rates) */}
+        {professional.servicesOffered && professional.servicesOffered.length > 0 && (
+          <DetailItem label="Services Offered (with rates)" value={professional.servicesOffered} icon={<FaBriefcase />} isList={true} itemProperty="name" rateProperty="hourlyRate" />
         )}
 
         {/* serviceAreas is not in the sample API response, remove or adapt if it exists */}

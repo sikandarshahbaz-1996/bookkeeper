@@ -173,6 +173,65 @@
   margin-bottom: 20px;
 }
 
+/* Styles for the new expertise grid and rate inputs */
+.expertiseGrid {
+  display: grid;
+  /* Adjust grid template columns if you want one service per row, or keep as is for multi-column */
+  /* For one service per row with rate input beside: */
+  /* grid-template-columns: 1fr; */
+  gap: 15px; /* Gap between each service item */
+  margin-bottom: 20px;
+}
+
+.expertiseItem {
+  /* If using one service per row, this can be a flex container */
+  /* display: flex; */
+  /* flex-direction: column; */ /* Stack checkbox/label and rate input vertically */
+  /* align-items: flex-start; */
+  padding: 10px;
+  border: 1px solid var(--border-color-light); /* Optional: border around each item */
+  border-radius: 6px;
+  background-color: var(--background-color-offset); /* Slightly different background */
+}
+
+.rateInputGroup {
+  margin-top: 8px; /* Space between checkbox and rate input */
+  display: flex;
+  flex-direction: column; /* Stack label and input */
+  width: 100%; /* Take full width of the item */
+}
+
+.rateLabel {
+  font-size: 13px;
+  color: var(--secondary-color); /* Lighter color for this sub-label */
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.rateInput {
+  /* Inherit from .input and then customize if needed */
+  width: 100%; /* Make rate input take available width */
+  padding: 10px; /* Slightly less padding than main inputs if desired */
+  border: 1px solid var(--input-border-color);
+  background-color: var(--input-background-color);
+  color: var(--input-text-color);
+  border-radius: 6px;
+  font-size: 14px; /* Slightly smaller font for rate */
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.rateInput::placeholder {
+  color: var(--secondary-color);
+}
+
+.rateInput:focus {
+  border-color: var(--input-focus-border-color);
+  outline: none;
+  box-shadow: var(--input-focus-box-shadow);
+}
+
+
 .checkboxLabel {
   display: flex;
   align-items: center;

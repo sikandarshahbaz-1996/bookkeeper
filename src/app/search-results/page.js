@@ -141,7 +141,7 @@ function SearchResultsContent() {
                       <strong>Services:</strong>{' '}
                       {prof.servicesOffered
                         .slice(0, 3)
-                        .map(serviceObj => serviceObj.service) // Access the 'service' property
+                        .map(serviceObj => serviceObj.name) // Correctly access the 'name' property
                         .join(', ')}
                       {prof.servicesOffered.length > 3 ? '...' : ''}
                     </p>

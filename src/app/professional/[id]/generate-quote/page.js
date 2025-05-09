@@ -49,7 +49,7 @@ function GenerateQuoteContent() {
   }, [id]);
 
   const handleAddService = () => {
-    if (!professional?.areasOfExpertise || professional.areasOfExpertise.length === 0) {
+    if (!professional?.servicesOffered || professional.servicesOffered.length === 0) { // Check servicesOffered
       toast.warn("This professional currently offers no services to select.");
       return;
     }
@@ -57,8 +57,8 @@ function GenerateQuoteContent() {
       ...selectedServices,
       {
         id: generateUniqueId(), // Unique ID for this instance of service selection
-        serviceName: professional.areasOfExpertise[0].name, // Default to first service
-        rate: professional.areasOfExpertise[0].hourlyRate,
+        serviceName: professional.servicesOffered[0]?.name || "Unknown Service", 
+        rate: professional.servicesOffered[0]?.hourlyRate !== undefined ? professional.servicesOffered[0]?.hourlyRate : 0,
         transactions: '',
         bankReconciliation: 'no',
         financialStatements: 'no',
@@ -71,8 +71,12 @@ function GenerateQuoteContent() {
       selectedServices.map(s => {
         if (s.id === instanceId) {
           if (field === 'serviceName') {
-            const selectedServiceDetail = professional.areasOfExpertise.find(pSvc => pSvc.name === value);
-            return { ...s, serviceName: value, rate: selectedServiceDetail?.hourlyRate || 0 };
+            const selectedServiceDetail = professional.servicesOffered.find(pSvc => pSvc.name === value); // Use servicesOffered
+            return { 
+              ...s, 
+              serviceName: value, 
+              rate: selectedServiceDetail?.hourlyRate !== undefined ? selectedServiceDetail.hourlyRate : 0 
+            };
           }
           return { ...s, [field]: value };
         }
@@ -165,9 +169,9 @@ function GenerateQuoteContent() {
                 value={serviceInstance.serviceName}
                 onChange={(e) => handleServiceChange(serviceInstance.id, 'serviceName', e.target.value)}
               >
-                {professional.areasOfExpertise.map(profService => (
-                  <option key={profService.name} value={profService.name}>
-                    {profService.name} (${profService.hourlyRate}/hr)
+                {(professional.servicesOffered || []).map((profService, index) => ( // Use servicesOffered
+                  <option key={profService.name || `service-${index}`} value={profService.name || ''}>
+                    {profService.name || 'Unknown Service'} ({profService.hourlyRate !== undefined ? `$${profService.hourlyRate}/hr` : 'Rate N/A'})
                   </option>
                 ))}
               </select>

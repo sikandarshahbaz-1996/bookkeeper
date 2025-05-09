@@ -48,6 +48,25 @@ export async function GET(request, context) {
 
     const professionalToSend = { ...professional };
 
+    // Ensure areasOfExpertise (general skills) is an array of strings
+    if (Array.isArray(professionalToSend.areasOfExpertise)) {
+      professionalToSend.areasOfExpertise = professionalToSend.areasOfExpertise.filter(skill => typeof skill === 'string' && skill.trim() !== '');
+    } else {
+      professionalToSend.areasOfExpertise = [];
+    }
+
+    // Ensure servicesOffered is an array of objects with name and hourlyRate
+    if (Array.isArray(professionalToSend.servicesOffered)) {
+      professionalToSend.servicesOffered = professionalToSend.servicesOffered.filter(service => 
+        service && 
+        typeof service.name === 'string' && service.name.trim() !== '' &&
+        typeof service.hourlyRate === 'number' && !isNaN(service.hourlyRate)
+      );
+    } else {
+      // If it's not an array or doesn't exist, set to empty array
+      professionalToSend.servicesOffered = [];
+    }
+
     if (professionalToSend.address) {
       professionalToSend.location = `${professionalToSend.address.city || ''}${professionalToSend.address.city && professionalToSend.address.province ? ', ' : ''}${professionalToSend.address.province || ''}`.trim();
       if (!professionalToSend.location) delete professionalToSend.location;

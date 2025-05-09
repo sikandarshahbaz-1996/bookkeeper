@@ -6,20 +6,9 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import styles from './page.module.css';
 
-const areasOfExpertiseOptions = [
-  { name: "Bookkeeping", minPrice: 45 },
-  { name: "Tax Preparation & Filing", minPrice: 95 },
-  { name: "Payroll Processing", minPrice: 55 },
-  { name: "Financial Statement Preparation", minPrice: 85 },
-  { name: "Audit Services", minPrice: 225 },
-  { name: "Forensic Accounting", minPrice: 250 },
-  { name: "Business Valuation", minPrice: 175 },
-  { name: "Management Consulting", minPrice: 150 },
-  { name: "Budgeting & Forecasting", minPrice: 100 },
-  { name: "Cash Flow Management", minPrice: 115 },
-  { name: "IRS Representation", minPrice: 160 },
-  { name: "Startup Advisory", minPrice: 120 }
-];
+// No longer need offeredServicesWithOptions here, as services with rates are not set at signup.
+// If there's a predefined list of general expertise areas for checkboxes, it would go here.
+// For now, we'll make it a dynamic list of strings like qualifications/experience.
 
 const languageOptions = [
   "English", "Mandarin Chinese", "Hindi", "Spanish", "French", "Standard Arabic",
@@ -60,7 +49,8 @@ export default function SignUpProfessionalPage() {
     password: '',
     qualifications: [''],
     experience: [''],
-    areasOfExpertise: [], // Will store objects: { name, minPrice, hourlyRate }
+    areasOfExpertise: [''], // For general skills (dynamic array of strings)
+    servicesOffered: [], // Will be empty at signup
     languagesSpoken: [],
     softwareProficiency: []
   });
@@ -94,35 +84,8 @@ export default function SignUpProfessionalPage() {
     }
   };
 
-  const handleExpertiseCheckboxChange = (serviceName, minPrice, isChecked) => {
-    setFormData(prev => {
-      const currentExpertise = prev.areasOfExpertise;
-      if (isChecked) {
-        // Add service if checked
-        return {
-          ...prev,
-          areasOfExpertise: [...currentExpertise, { name: serviceName, minPrice, hourlyRate: '' }]
-        };
-      } else {
-        // Remove service if unchecked
-        return {
-          ...prev,
-          areasOfExpertise: currentExpertise.filter(item => item.name !== serviceName)
-        };
-      }
-    });
-  };
-
-  const handleExpertiseRateChange = (serviceName, rate) => {
-    setFormData(prev => ({
-      ...prev,
-      areasOfExpertise: prev.areasOfExpertise.map(item =>
-        item.name === serviceName ? { ...item, hourlyRate: rate } : item
-      )
-    }));
-  };
   
-  const handleCheckboxChange = (listName, value) => {
+  const handleCheckboxChange = (listName, value) => { // This is for general checkboxes like languages, software, and potentially predefined areasOfExpertise if we used checkboxes for them.
     setFormData(prev => {
       const currentList = prev[listName];
       if (currentList.includes(value)) {
@@ -144,30 +107,16 @@ export default function SignUpProfessionalPage() {
       return;
     }
 
-    // Validate hourly rates for selected services
-    for (const service of formData.areasOfExpertise) {
-      if (!service.hourlyRate || parseFloat(service.hourlyRate) < service.minPrice) {
-        toast.error(`Hourly rate for ${service.name} must be at least $${service.minPrice}.`);
-        setLoading(false);
-        return;
-      }
-      if (isNaN(parseFloat(service.hourlyRate))) {
-        toast.error(`Please enter a valid number for the hourly rate of ${service.name}.`);
-        setLoading(false);
-        return;
-      }
-    }
+    // No servicesOffered to validate at signup anymore
     
-    // Prepare payload, ensuring hourlyRate is a number
+    // Prepare payload
     const payload = {
-      ...formData,
+      ...formData, 
       role: 'professional',
       qualifications: formData.qualifications.filter(q => q.trim() !== ''),
       experience: formData.experience.filter(exp => exp.trim() !== ''),
-      areasOfExpertise: formData.areasOfExpertise.map(s => ({
-        name: s.name,
-        hourlyRate: parseFloat(s.hourlyRate) // Ensure it's a number
-      })),
+      areasOfExpertise: formData.areasOfExpertise.filter(area => area.trim() !== ''), // Send as array of strings
+      servicesOffered: [], // Explicitly send empty array for servicesOffered at signup
     };
 
     try {
@@ -275,43 +224,25 @@ export default function SignUpProfessionalPage() {
             </div>
           ))}
 
-          {/* Areas of Expertise */}
+          {/* Areas of Expertise (General Skills - Dynamic List) */}
           <div className={styles.sectionTitle}>Areas of Expertise</div>
-          <div className={styles.expertiseGrid}>
-            {areasOfExpertiseOptions.map(service => {
-              const isSelected = formData.areasOfExpertise.some(s => s.name === service.name);
-              const selectedServiceData = formData.areasOfExpertise.find(s => s.name === service.name);
-              return (
-                <div key={service.name} className={styles.expertiseItem}>
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={(e) => handleExpertiseCheckboxChange(service.name, service.minPrice, e.target.checked)}
-                    /> {service.name} (Min. ${service.minPrice}/hr)
-                  </label>
-                  {isSelected && (
-                    <div className={styles.rateInputGroup}>
-                      <label htmlFor={`${service.name}-rate`} className={styles.rateLabel}>Your Rate ($/hr):</label>
-                      <input
-                        type="number"
-                        id={`${service.name}-rate`}
-                        name={`${service.name}-rate`}
-                        value={selectedServiceData?.hourlyRate || ''}
-                        onChange={(e) => handleExpertiseRateChange(service.name, e.target.value)}
-                        className={styles.rateInput}
-                        placeholder={`e.g. ${service.minPrice}`}
-                        min={service.minPrice} // HTML5 min attribute for basic validation
-                        step="0.01" // Allow decimal inputs
-                        required // Ensure a rate is entered if service is selected
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
+          {formData.areasOfExpertise.map((area, index) => (
+            <div key={`area-${index}`} className={styles.dynamicInputGroup}>
+              <input
+                type="text"
+                value={area}
+                onChange={(e) => handleDynamicListChange('areasOfExpertise', index, e.target.value)}
+                className={styles.input}
+                placeholder={`Area of Expertise ${index + 1}`}
+              />
+              {formData.areasOfExpertise.length > 1 && (
+                <button type="button" onClick={() => removeDynamicListItem('areasOfExpertise', index)} className={styles.removeButton}>&ndash;</button>
+              )}
+              {index === formData.areasOfExpertise.length - 1 && (
+                <button type="button" onClick={() => addDynamicListItem('areasOfExpertise')} className={styles.addButton}>Add</button>
+              )}
+            </div>
+          ))}
 
           {/* Languages Spoken */}
           <div className={styles.sectionTitle}>Languages Spoken</div>
