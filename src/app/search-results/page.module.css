@@ -91,9 +91,26 @@
 }
 
 .profileCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.1); /* Consider a theme variable for hover shadow */
+  /* Hover effect is now on profileCardLink if it's the direct child of resultsGrid */
 }
+
+/* Styling for the Link component wrapping the card */
+.profileCardLink {
+  text-decoration: none; /* Remove underline from link */
+  color: inherit; /* Inherit text color */
+  display: block; /* Make the link a block element to contain the card */
+  border-radius: 8px; /* Match card's border-radius */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.profileCardLink:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15); /* Slightly more pronounced shadow on hover */
+}
+.profileCardLink:hover .profileCard {
+  border-color: var(--primary-color); /* Optional: highlight border on hover */
+}
+
 
 .profileCard h3 {
   font-size: 1.4rem;
@@ -118,6 +135,37 @@
   margin-top: -0.5rem; /* Pull it a bit closer to the main name */
   margin-bottom: 0.75rem;
 }
+
+.professionInCard {
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--foreground-color);
+  margin-bottom: 0.5rem;
+}
+
+.servicesSummary {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  margin-bottom: 1rem;
+}
+
+.viewProfileButton {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.profileCardLink:hover .viewProfileButton {
+  background-color: var(--primary-color-hover);
+}
+
 
 .paginationControls {
   display: flex;

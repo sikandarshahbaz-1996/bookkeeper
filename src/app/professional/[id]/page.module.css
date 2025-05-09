@@ -1,0 +1,249 @@
+.pageContainer {
+  background-color: var(--background-color);
+  color: var(--foreground-color);
+  padding: 2rem 1rem; /* Responsive padding */
+  min-height: calc(100vh - 70px); /* Adjust if navbar height is different */
+}
+
+.profileLayout {
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: var(--card-background-color);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+  position: relative; /* For absolute positioning of back button if needed, or flex layout */
+}
+
+.navigationHeader {
+  margin-bottom: 1.5rem;
+  /* display: flex; */ /* If you want to align items in this header */
+}
+
+.backButton {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.backButton:hover {
+  background-color: var(--primary-color-light);
+  color: var(--primary-color-dark); /* Or keep primary-color */
+}
+
+
+.loading, .error {
+  text-align: center;
+  font-size: 1.2rem;
+  padding: 3rem;
+  color: var(--foreground-color);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.25rem;
+}
+
+.profession {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--foreground-color);
+  margin-bottom: 0.5rem;
+}
+
+.company {
+  font-size: 1.1rem;
+  color: var(--secondary-color);
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.detailItem {
+  background-color: var(--card-alt-bg, var(--background-color)); /* Use alt or main bg */
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.detailLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--secondary-color);
+  margin-bottom: 0.3rem;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detailValue {
+  font-size: 1rem;
+  color: var(--foreground-color);
+  word-wrap: break-word;
+}
+
+.detailValueList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.detailValueList li {
+  background-color: var(--input-background-color);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  margin-bottom: 0.3rem;
+  border: 1px solid var(--border-color);
+  font-size: 0.95rem;
+}
+
+/* Styles for the services list specifically */
+.serviceList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.serviceListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.2rem; /* Less padding if it's inside a detailItem already padded */
+  border-bottom: 1px solid var(--border-color);
+  font-size: 1rem;
+}
+
+.serviceListItem:last-child {
+  border-bottom: none;
+}
+
+.serviceName {
+  color: var(--foreground-color);
+  flex-grow: 1;
+}
+
+.serviceRate {
+  color: var(--primary-color);
+  font-weight: 500;
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+
+.bioSection {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background-color: var(--card-alt-bg, var(--background-color)); /* Use alt or main bg */
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+/* If DetailItem for services is used directly and not inside bioSection, it will have its own border.
+   If it's inside bioSection, and bioSection has padding/border, then DetailItem might not need its own.
+   The current JS puts it directly, so it will use .detailItem style.
+*/
+
+.bioSection h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.bioText {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--foreground-color);
+  white-space: pre-wrap; /* Preserve line breaks from input */
+}
+
+.ctaSection {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.bookButton {
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+  padding: 0.8rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.bookButton:hover {
+  background-color: var(--primary-color-hover);
+  transform: translateY(-2px);
+}
+
+.contactLink {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+.contactLink:hover {
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profileLayout {
+    padding: 1.5rem;
+  }
+  .name {
+    font-size: 2rem;
+  }
+  .profession {
+    font-size: 1.1rem;
+  }
+  .company {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageContainer {
+    padding: 1rem 0.5rem;
+  }
+  .profileLayout {
+    padding: 1rem;
+    border-radius: 0; /* Full width on small screens */
+  }
+  .detailsGrid {
+    grid-template-columns: 1fr; /* Stack details */
+  }
+  .name {
+    font-size: 1.8rem;
+  }
+  .profession {
+    font-size: 1rem;
+  }
+  .bookButton {
+    width: 100%;
+    padding: 0.9rem 1.5rem;
+  }
+}

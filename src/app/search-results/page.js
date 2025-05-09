@@ -54,6 +54,7 @@ function SearchResultsContent() {
       }
       const data = await response.json();
       setResults(data.professionals || []);
+      // Removed console.log for sample professional data
       setPagination(data.pagination || { currentPage: page, totalPages: 1, totalResults: 0, limit: 10 });
     } catch (err) {
       setError(err.message);
@@ -124,17 +125,33 @@ function SearchResultsContent() {
         <>
           <div className={styles.resultsGrid}> {/* This class will be changed to stack items */}
             {results.map(prof => (
-              <div key={prof._id} className={styles.profileCard}>
-                <h3>{prof.name || prof.businessName}</h3> {/* Prioritize person's name */}
-                {prof.businessName && prof.name && <p className={styles.businessNameInCard}>Business: {prof.businessName}</p>}
-                {prof.businessAddress && <p><strong>Address:</strong> {prof.businessAddress}</p>}
-                {prof.areasOfExpertise?.length > 0 && <p><strong>Expertise:</strong> {prof.areasOfExpertise.join(', ')}</p>}
-                {prof.servicesOffered?.length > 0 && (
-                  <p><strong>Services:</strong> {prof.servicesOffered.map(s => s.service).join(', ')}</p>
-                )}
-                {/* Add more fields as desired, e.g., a link to a full profile page */}
-                {/* <Link href={`/professionals/${prof._id}`}>View Profile</Link> */}
-              </div>
+              <Link key={prof._id} href={`/professional/${prof._id}`} className={styles.profileCardLink}>
+                <div className={styles.profileCard}>
+                  <h3>{prof.name || prof.businessName || 'N/A'}</h3>
+                  {/* prof.profession is not in the sample, will not render if undefined */}
+                  {prof.profession && <p className={styles.professionInCard}>{prof.profession}</p>}
+                  {/* Display businessName if it exists and is different from the main name, or if prof.name is not present */}
+                  {prof.businessName && prof.name !== prof.businessName && <p className={styles.businessNameInCard}>Company: {prof.businessName}</p>}
+                  {prof.businessName && !prof.name && <p className={styles.businessNameInCard}>Company: {prof.businessName}</p>}
+                                    
+                  {prof.businessAddress && <p><strong>Location:</strong> {prof.businessAddress.split(',').slice(0, 2).join(',')}</p>} {/* Show first 2 parts of address for brevity */}
+                  
+                  {prof.servicesOffered && prof.servicesOffered.length > 0 && (
+                    <p className={styles.servicesSummary}>
+                      <strong>Services:</strong>{' '}
+                      {prof.servicesOffered
+                        .slice(0, 3)
+                        .map(serviceObj => serviceObj.service) // Access the 'service' property
+                        .join(', ')}
+                      {prof.servicesOffered.length > 3 ? '...' : ''}
+                    </p>
+                  )}
+                  {(!prof.servicesOffered || prof.servicesOffered.length === 0) && (
+                     <p className={styles.servicesSummary}><strong>Services:</strong> Not specified</p>
+                  )}
+                  <span className={styles.viewProfileButton}>View Profile</span>
+                </div>
+              </Link>
             ))}
           </div>
 
