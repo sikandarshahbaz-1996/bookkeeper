@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './page.module.css';
 import { useAuth } from '@/context/AuthContext';
 import withAuth from '@/components/withAuth';
 import { toast } from 'react-toastify';
-// Removed all date-fns and date-fns-tz imports
+import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
 
 // Re-use placeholder data for options if needed for editing (e.g., checkboxes)
 // Ideally, fetch these from a config or API
@@ -136,6 +136,8 @@ const formatToAmPm = (timeString) => {
 };
 
 
+const libraries = ['places']; // Define libraries for Google Maps API
+
 function DashboardPage() {
   const { token, logout, user: authUser } = useAuth(); // Get authUser for initial state if needed
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'business'
@@ -161,6 +163,13 @@ function DashboardPage() {
   const [isSaving, setIsSaving] = useState(false); // Saving state (can be used for both profile and business)
   const [error, setError] = useState('');
   const [serviceRateErrors, setServiceRateErrors] = useState({}); // For rate input validation
+
+  const autocompleteRef = useRef(null);
+
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+    libraries,
+  });
 
   // Fetch profile data
   const fetchProfile = useCallback(async () => {
@@ -744,11 +753,55 @@ function DashboardPage() {
             </div>
             <div className={styles.formRow}>
               <label htmlFor="businessAddress"><strong>Address:</strong></label>
-              {isEditingBusiness ? (
-                <input type="text" id="businessAddress" name="businessAddress" value={editBusinessData.businessAddress || ''} onChange={handleBusinessInputChange} className={styles.input} />
-              ) : (
-                <span>{profileData.businessAddress || <em className={styles.emptyField}>empty</em>}</span>
-              )}
+              <div className={styles.inputFieldContainer}> {/* Added wrapper div */}
+                {isEditingBusiness ? (
+                  isLoaded ? (
+                    <Autocomplete
+                      onLoad={(autocomplete) => {
+                      autocompleteRef.current = autocomplete;
+                    }}
+                    onPlaceChanged={() => {
+                      if (autocompleteRef.current !== null) {
+                        const place = autocompleteRef.current.getPlace();
+                        if (place && place.formatted_address) {
+                          setEditBusinessData(prev => ({ ...prev, businessAddress: place.formatted_address }));
+                        } else if (place && place.name) { // Fallback if formatted_address is not available
+                           setEditBusinessData(prev => ({ ...prev, businessAddress: place.name }));
+                        }
+                      } else {
+                        console.log('Autocomplete is not loaded yet!');
+                      }
+                    }}
+                    // types={['address']} // Optionally restrict to addresses
+                    // fields={['formatted_address', 'geometry', 'name']} // Specify fields
+                  >
+                    <input
+                      type="text"
+                      id="businessAddress"
+                      name="businessAddress"
+                      placeholder="Start typing your business address"
+                      value={editBusinessData.businessAddress || ''}
+                      onChange={handleBusinessInputChange} // Allow manual input too
+                      className={styles.input}
+                    />
+                  </Autocomplete>
+                  ) : (
+                    <input
+                      type="text"
+                      id="businessAddress"
+                      name="businessAddress"
+                      placeholder="Loading address suggestions..."
+                      value={editBusinessData.businessAddress || ''}
+                      onChange={handleBusinessInputChange}
+                      className={styles.input}
+                      disabled // Disable while maps API is loading
+                    />
+                  )
+                ) : (
+                  <span>{profileData.businessAddress || <em className={styles.emptyField}>empty</em>}</span>
+                )}
+                {loadError && isEditingBusiness && <p className={styles.inlineError}>Could not load address suggestions.</p>}
+              </div> {/* End wrapper div */}
             </div>
             <div className={styles.formRow}>
               <label htmlFor="businessPhone"><strong>Phone:</strong></label>

@@ -86,9 +86,13 @@
 .formRow label {
     flex-shrink: 0; /* Prevent label from shrinking */
 }
-.formRow .input {
+.formRow .input, .formRow .inputFieldContainer { /* Apply flex properties to the container as well */
     flex-grow: 1;
     max-width: 400px; /* Limit input width */
+    display: flex; /* Ensure Autocomplete's inner div can expand if it's also flex */
+}
+.inputFieldContainer > div { /* Target the div rendered by Autocomplete if needed */
+    width: 100%;
 }
 
 .input { /* General input style for dashboard edit */
