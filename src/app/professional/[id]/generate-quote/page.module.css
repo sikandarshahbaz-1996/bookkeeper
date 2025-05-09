@@ -249,11 +249,11 @@
 }
 
 .quoteBreakdownItem span:first-child {
-  color: var(--secondary-color);
+  color: var(--success-color-dark, var(--success-color)); /* Adjusted for better visibility on light backgrounds */
 }
 .quoteBreakdownItem span:last-child {
   font-weight: 500;
-  color: var(--foreground-color);
+  color: var(--success-color-dark, var(--success-color)); /* Adjusted for better visibility on light backgrounds */
 }
 
 .quoteDivider {
@@ -267,14 +267,14 @@
   color: var(--primary-color); /* Emphasize total */
 }
 .quoteTotal span:first-child {
-    color: var(--foreground-color); /* Label for total */
+    color: var(--success-color-dark, var(--success-color)); /* Label for total - Adjusted for better visibility */
 }
 
 
 .quoteFinePrint {
   display: block;
   font-size: 0.8rem;
-  color: var(--secondary-color);
+  color: var(--success-color-dark, var(--success-color)); /* Adjusted for better visibility on light backgrounds */
   margin-top: 1rem;
   text-align: center;
 }
