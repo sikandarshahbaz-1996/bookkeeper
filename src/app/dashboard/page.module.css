@@ -270,17 +270,37 @@
   gap: 8px; /* Space between checkbox and rate input */
 }
 
-.rateInputContainer {
+.serviceInputsContainer { /* New container for rate and duration */
   display: flex;
-  flex-direction: column; /* Stack input and error message */
-  margin-left: 28px; /* Indent rate input under checkbox (approx checkbox width + margin) */
+  flex-direction: column; /* Stack rate and duration */
+  gap: 8px; /* Space between rate and duration groups */
+  margin-left: 28px; /* Indent under checkbox */
+}
+
+.rateInputContainer, .durationInputContainer {
+  display: flex;
+  flex-direction: column; /* Stack label/input and error message */
   gap: 4px;
 }
 
-.rateInput {
-  padding: 6px 10px; /* Slightly smaller padding for rate input */
+.inlineLabel { /* For "Rate ($/hr):" and "Duration:" labels */
+  font-size: 13px;
+  color: var(--secondary-color);
+  margin-bottom: 2px;
+}
+
+.rateInput, .durationSelect {
+  padding: 6px 10px;
   font-size: 14px;
-  max-width: 150px; /* Limit width of rate input */
+  max-width: 180px; /* Unified max-width */
+  /* Inherits .input styles for border, background, etc. */
+}
+
+.durationSelect {
+  /* Specific select styling if needed, but mostly relies on .input and above */
+  appearance: menulist; /* More standard select appearance */
+  -webkit-appearance: menulist;
+  -moz-appearance: menulist;
 }
 
 .inlineError {

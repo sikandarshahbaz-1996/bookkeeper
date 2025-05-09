@@ -141,8 +141,12 @@ export async function PUT(request) {
         } else {
             const validatedServices = [];
             for (const item of allowedUpdates.servicesOffered) {
-                if (!item || typeof item.name !== 'string' || item.name.trim() === '' || typeof item.hourlyRate !== 'number' || isNaN(item.hourlyRate)) {
-                    console.warn('Invalid service item structure in servicesOffered:', item);
+                // Validate name, hourlyRate, and now duration
+                if (!item || 
+                    typeof item.name !== 'string' || item.name.trim() === '' || 
+                    typeof item.hourlyRate !== 'number' || isNaN(item.hourlyRate) ||
+                    typeof item.duration !== 'number' || isNaN(item.duration) || item.duration <= 0) { // Added duration validation
+                    console.warn('Invalid service item structure or missing/invalid duration in servicesOffered:', item);
                     continue; 
                 }
                 const serviceOption = servicesOfferedOptions.find(opt => opt.name === item.name);
@@ -153,7 +157,13 @@ export async function PUT(request) {
                 if (item.hourlyRate < serviceOption.minPrice) {
                     return NextResponse.json({ message: `Hourly rate for ${item.name} ($${item.hourlyRate}) cannot be less than minimum $${serviceOption.minPrice}.` }, { status: 400 });
                 }
-                validatedServices.push({ name: item.name, hourlyRate: item.hourlyRate });
+                // Ensure duration is one of the accepted values (optional, but good for strictness if needed)
+                // const validDurations = [60, 120, 180, 240];
+                // if (!validDurations.includes(item.duration)) {
+                //     console.warn(`Invalid duration value for service ${item.name}: ${item.duration}. Will be ignored or defaulted if necessary.`);
+                //     continue; // Or handle as an error
+                // }
+                validatedServices.push({ name: item.name, hourlyRate: item.hourlyRate, duration: item.duration }); // Include duration
             }
             allowedUpdates.servicesOffered = validatedServices;
             if (allowedUpdates.servicesOffered.length === 0 && updateData.servicesOffered.length > 0) {

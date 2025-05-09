@@ -22,6 +22,12 @@ const languageOptions = [
   "Vietnamese", "Tagalog", "Wu Chinese", "Korean", "Iranian Persian", "Hausa",
   "Egyptian Arabic", "Swahili", "Javanese", "Italian", "Thai"
 ];
+const serviceDurationOptions = [
+  { label: "1 hr", value: 60 },
+  { label: "2 hrs", value: 120 },
+  { label: "3 hrs", value: 180 },
+  { label: "4 hrs", value: 240 },
+];
 const softwareProficiencyOptions = [
   "QuickBooks Online", "QuickBooks Desktop", "Xero", "FreshBooks", "Zoho Books",
   "Sage Intacct", "NetSuite ERP", "Wave Accounting", "MYOB", "KashFlow",
@@ -101,6 +107,11 @@ const formatToAmPm = (timeString) => {
     date.setHours(hourNum, minNum, 0, 0);
     return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(date);
   } catch (error) { console.error("Error formatting time to AM/PM:", error); return 'Invalid Time'; }
+};
+
+const formatDuration = (minutes) => {
+  const option = serviceDurationOptions.find(opt => opt.value === parseInt(minutes, 10));
+  return option ? option.label : `${minutes} min`;
 };
 
 // Standalone ProfileContent Component (for "Profile" Tab)
@@ -215,7 +226,7 @@ function DashboardPage() {
   
   const [editBusinessData, setEditBusinessData] = useState({
     businessName: '', businessAddress: '', businessPhone: '', businessEmail: '',
-    servicesOffered: [], 
+    servicesOffered: [], // Will be populated by fetchProfile, including duration
     timezone: 'America/New_York',
     availability: daysOfWeek.map(day => ({ day, isAvailable: !['Saturday', 'Sunday'].includes(day), startTime: "09:00", endTime: "17:00" }))
   });
@@ -257,6 +268,7 @@ function DashboardPage() {
             return { 
               name: s_api.name, 
               rate: s_api.hourlyRate !== undefined ? String(s_api.hourlyRate) : '', 
+              duration: s_api.duration !== undefined ? parseInt(s_api.duration, 10) : 60, // Add duration, default to 60
               minPrice: serviceOption ? serviceOption.minPrice : 0 
             };
           }) 
@@ -351,11 +363,12 @@ function DashboardPage() {
         setServiceRateErrors(prevE => { const nE = { ...prevE }; delete nE[serviceNameFromOption]; return nE; }); 
       } else { 
         const serviceOption = servicesOfferedSelectOptions.find(opt => opt.name === serviceNameFromOption);
-        newServices = [...currentServices, { name: serviceNameFromOption, rate: '', minPrice: serviceOption ? serviceOption.minPrice : 0 }]; 
+        newServices = [...currentServices, { name: serviceNameFromOption, rate: '', duration: 60, minPrice: serviceOption ? serviceOption.minPrice : 0 }]; // Add default duration
       }
       return { ...prev, servicesOffered: newServices };
     });
   };
+
   const handleServiceRateChange = (serviceName, rate) => {
     setEditBusinessData(prev => ({ 
       ...prev, 
@@ -366,6 +379,13 @@ function DashboardPage() {
     } else if (serviceRateErrors[serviceName]) {
         setServiceRateErrors(prevE => { const nE = { ...prevE }; delete nE[serviceName]; return nE; });
     }
+  };
+
+  const handleServiceDurationChange = (serviceName, duration) => {
+    setEditBusinessData(prev => ({
+      ...prev,
+      servicesOffered: (prev.servicesOffered || []).map(s => s.name === serviceName ? { ...s, duration: parseInt(duration, 10) } : s)
+    }));
   };
 
   const handleSaveBusinessChanges = async () => {
@@ -394,7 +414,7 @@ function DashboardPage() {
       businessAddress: editBusinessData.businessAddress,
       businessPhone: editBusinessData.businessPhone, 
       businessEmail: editBusinessData.businessEmail,
-      servicesOffered: (editBusinessData.servicesOffered || []).map(s => ({ name: s.name, hourlyRate: parseFloat(s.rate) })), 
+      servicesOffered: (editBusinessData.servicesOffered || []).map(s => ({ name: s.name, hourlyRate: parseFloat(s.rate), duration: s.duration || 60 })), 
       availability: (editBusinessData.availability || []).map(day => ({ ...day, startTime: day.isAvailable ? convertToUTCHHMm(day.startTime, editBusinessData.timezone) : null, endTime: day.isAvailable ? convertToUTCHHMm(day.endTime, editBusinessData.timezone) : null })),
       timezone: editBusinessData.timezone,
     };
@@ -412,6 +432,7 @@ function DashboardPage() {
             return {
               name: s_api.name,
               rate: s_api.hourlyRate !== null && s_api.hourlyRate !== undefined ? String(s_api.hourlyRate) : '',
+              duration: s_api.duration !== undefined ? parseInt(s_api.duration, 10) : 60,
               minPrice: serviceOpt ? serviceOpt.minPrice : 0
             };
           })
@@ -441,6 +462,7 @@ function DashboardPage() {
           return {
             name: s_prof.name,
             rate: s_prof.hourlyRate !== null && s_prof.hourlyRate !== undefined ? String(s_prof.hourlyRate) : '',
+            duration: s_prof.duration !== undefined ? parseInt(s_prof.duration, 10) : 60,
             minPrice: serviceOpt ? serviceOpt.minPrice : 0
           };
         })
@@ -573,24 +595,54 @@ function DashboardPage() {
                             {serviceOption.name} (Min. ${serviceOption.minPrice}/hr)
                           </label>
                           {isChecked && (
-                            <div className={styles.rateInputContainer}>
-                              <input 
-                                type="number" 
-                                placeholder="Your Rate" 
-                                value={serviceData.rate || ''} 
-                                onChange={(e) => handleServiceRateChange(serviceOption.name, e.target.value)} 
-                                className={`${styles.input} ${styles.rateInput}`} 
-                                min={serviceOption.minPrice} 
-                                step="0.01"
-                              />
-                              {serviceRateErrors[serviceOption.name] && <p className={styles.inlineError}>{serviceRateErrors[serviceOption.name]}</p>}
+                            <div className={styles.serviceInputsContainer}> {/* Changed class for better styling potential */}
+                              <div className={styles.rateInputContainer}>
+                                <label htmlFor={`rate-${serviceOption.name}`} className={styles.inlineLabel}>Rate ($/hr):</label>
+                                <input 
+                                  type="number" 
+                                  id={`rate-${serviceOption.name}`}
+                                  placeholder="Your Rate" 
+                                  value={serviceData.rate || ''} 
+                                  onChange={(e) => handleServiceRateChange(serviceOption.name, e.target.value)} 
+                                  className={`${styles.input} ${styles.rateInput}`} 
+                                  min={serviceOption.minPrice} 
+                                  step="0.01"
+                                />
+                                {serviceRateErrors[serviceOption.name] && <p className={styles.inlineError}>{serviceRateErrors[serviceOption.name]}</p>}
+                              </div>
+                              <div className={styles.durationInputContainer}>
+                                <label htmlFor={`duration-${serviceOption.name}`} className={styles.inlineLabel}>Duration:</label>
+                                <select
+                                  id={`duration-${serviceOption.name}`}
+                                  value={serviceData.duration || 60}
+                                  onChange={(e) => handleServiceDurationChange(serviceOption.name, e.target.value)}
+                                  className={`${styles.input} ${styles.durationSelect}`}
+                                >
+                                  {serviceDurationOptions.map(opt => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                  ))}
+                                </select>
+                              </div>
                             </div>
                           )}
                         </div>
                       );
                     })}
                   </div>
-                ) : ( profileData.servicesOffered?.length > 0 ? <ul>{profileData.servicesOffered.map((s, i) => <li key={i}>{s.name}: {s.hourlyRate != null && s.hourlyRate !== '' ? `$${s.hourlyRate}/hr` : <em className={styles.emptyField}>No rate set</em>}</li>)}</ul> : <p><em className={styles.emptyField}>No services listed.</em></p> )}
+                ) : ( 
+                  profileData.servicesOffered?.length > 0 ? (
+                    <ul className={styles.serviceListDisplay}>
+                      {profileData.servicesOffered.map((s, i) => (
+                        <li key={i}>
+                          {s.name}: {s.hourlyRate != null && s.hourlyRate !== '' ? `$${s.hourlyRate}/hr` : <em className={styles.emptyField}>No rate set</em>}
+                          {s.duration ? ` - ${formatDuration(s.duration)}` : ''}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p><em className={styles.emptyField}>No services listed.</em></p>
+                  )
+                )}
               </div>
               <div className={styles.infoBlock}>
                 <h3>Availability</h3>
