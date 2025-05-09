@@ -142,7 +142,7 @@ function ProfessionalProfileContent() {
         <div className={styles.ctaSection}>
           <Link href={`/professional/${id}/generate-quote`} passHref>
             <button className={styles.bookButton}> {/* Re-using bookButton style for now */}
-              Generate Quote
+              Get a Quote
             </button>
           </Link>
         </div>
