@@ -2,9 +2,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 80vh;
+  min-height: 100vh; /* Ensure full viewport height for gradient */
   padding: 2rem;
-  background-color: var(--background-start-rgb);
+  background: var(--hero-background); /* Apply hero gradient */
+  color: var(--hero-text-color); /* Text color for elements directly on this background */
 }
 
 .formBox {

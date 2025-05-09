@@ -2,8 +2,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 70px); /* Account for navbar */
-  background-color: var(--background-color); /* Use global background */
+  min-height: 100vh; /* Ensure full viewport height for gradient */
+  background: var(--hero-background); /* Apply hero gradient */
+  color: var(--hero-text-color); /* Text color for elements directly on this background */
   padding: 20px;
   box-sizing: border-box;
 }

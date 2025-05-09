@@ -2,13 +2,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 70px); /* Adjust if navbar height is different */
-  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Updated background */
-  /* Using global background for consistency, can be overridden if a gradient is specifically desired for this page */
-  background-color: var(--background-color); 
+  min-height: 100vh; /* Ensure full viewport height for gradient */
+  background: var(--hero-background); /* Apply hero gradient */
+  color: var(--hero-text-color); /* Text color for elements directly on this background */
   padding: 20px;
   box-sizing: border-box;
-  /* margin-top: 70px; */ /* Removed: Redundant due to main element's padding-top in layout.js */
 }
 
 .signInBox {

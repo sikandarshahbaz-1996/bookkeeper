@@ -2,8 +2,9 @@
   display: flex;
   justify-content: center;
   align-items: flex-start; /* Align to top for long form */
-  min-height: calc(100vh - 70px); /* Account for navbar */
-  background-color: var(--background-color); /* Use global background */
+  min-height: 100vh; /* Ensure full viewport height for gradient */
+  background: var(--hero-background); /* Apply hero gradient */
+  color: var(--hero-text-color); /* Text color for elements directly on this background */
   padding: 40px 20px; /* More padding for longer form */
   box-sizing: border-box;
   overflow-y: auto; /* Allow scrolling for the container if content overflows */

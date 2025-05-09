@@ -148,7 +148,7 @@
     background-color: var(--card-alt-bg); 
 }
 .howItWorksSection .stepCard {
-    background-color: var(--card-alt-bg); /* Use alt card bg if section has different bg */
+    /* background-color: var(--card-alt-bg); */ /* Removed to use default card background like other cards */
     text-align: center;
 }
 .whyChooseUsSection .benefitCard {
@@ -167,6 +167,7 @@
   font-weight: 600;
   margin-bottom: 1rem; /* Increased space */
   color: var(--primary-color);
+  text-align: center; /* Center align card titles */
 }
 /* Removed color override for step/benefit card h3 */
 /* .stepCard h3, .benefitCard h3 {
@@ -178,6 +179,7 @@
   font-size: 1rem;
   line-height: 1.7; /* Increased line height */
   color: var(--foreground-color);
+  text-align: center; /* Center align card descriptions */
 }
 .stepCard p {
     max-width: 300px;
