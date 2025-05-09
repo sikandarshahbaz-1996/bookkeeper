@@ -1,0 +1,280 @@
+.pageContainer {
+  background-color: var(--background-color);
+  color: var(--foreground-color);
+  padding: 2rem 1rem;
+  min-height: calc(100vh - 70px); /* Adjust if navbar height is different */
+}
+
+.quoteFormLayout {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: var(--card-background-color);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+}
+
+.navigationHeader {
+  margin-bottom: 1.5rem;
+}
+
+.backButton {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.backButton:hover {
+  background-color: var(--primary-color-light);
+  color: var(--primary-color-dark);
+}
+
+.professionalHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.professionalName {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.25rem;
+}
+
+.businessName {
+  font-size: 1.1rem;
+  color: var(--secondary-color);
+}
+
+.loading, .error {
+  text-align: center;
+  font-size: 1.2rem;
+  padding: 3rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--foreground-color);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.serviceBlock {
+  background-color: var(--card-alt-bg, var(--background-color));
+  padding: 1.5rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.serviceBlockHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.serviceBlockTitle {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.removeServiceButton {
+  background-color: var(--error-color);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.removeServiceButton:hover {
+  background-color: darkred;
+}
+
+.inputGroup {
+  margin-bottom: 1rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  color: var(--foreground-color);
+}
+
+.input, .select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--input-border-color);
+  background-color: var(--input-background-color);
+  color: var(--input-text-color);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.select {
+  appearance: none;
+}
+
+.radioGroup {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+/* Custom Radio Button Styles */
+.radioLabel input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--input-border-color);
+  border-radius: 50%; /* Keep it round */
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  margin-right: 0.5rem; /* Space between custom radio and text */
+  transition: border-color 0.2s ease-in-out;
+}
+
+.radioLabel input[type="radio"]:checked {
+  border-color: var(--primary-color);
+}
+
+.radioLabel input[type="radio"]:checked::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px; /* Adjust size of inner circle */
+  height: 10px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+}
+
+.radioLabel:hover input[type="radio"] {
+  border-color: var(--primary-color-light, var(--primary-color));
+}
+
+
+.addServiceButton, .generateQuoteButton {
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 1rem;
+}
+
+/* Match signOutButton styling */
+.addServiceButton {
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+  padding: 10px 20px; /* from signOutButton */
+  border: none;
+  border-radius: 6px;
+  font-size: 16px; /* from signOutButton */
+  font-weight: 600; /* from signOutButton */
+  text-decoration: none; /* from signOutButton */
+  transition: background-color 0.3s ease; /* from signOutButton */
+  /* cursor: pointer; already present */
+  /* margin-top: 1rem; already present */
+}
+.addServiceButton:hover {
+  background-color: var(--primary-color-hover); /* from signOutButton:hover */
+}
+
+.generateQuoteButton:hover {
+  background-color: var(--primary-color-hover);
+}
+
+.quoteResult {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: var(--success-color-light, #e6ffed);
+  border: 1px solid var(--success-color);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.quoteResult h3 {
+  font-size: 1.3rem;
+  color: var(--success-color-dark, var(--success-color));
+  margin-bottom: 0.5rem;
+}
+
+.quoteResult p { /* This was for the old single amount, can be removed or repurposed if needed */
+  font-size: 1.5rem; /* Make the final total prominent */
+  font-weight: 700;
+  color: var(--primary-color); /* Use primary color for final total */
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.quoteBreakdownItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  font-size: 0.95rem;
+}
+
+.quoteBreakdownItem span:first-child {
+  color: var(--secondary-color);
+}
+.quoteBreakdownItem span:last-child {
+  font-weight: 500;
+  color: var(--foreground-color);
+}
+
+.quoteDivider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 0.75rem 0;
+}
+
+.quoteTotal span {
+  font-size: 1.1rem;
+  color: var(--primary-color); /* Emphasize total */
+}
+.quoteTotal span:first-child {
+    color: var(--foreground-color); /* Label for total */
+}
+
+
+.quoteFinePrint {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--secondary-color);
+  margin-top: 1rem;
+  text-align: center;
+}

@@ -140,9 +140,11 @@ function ProfessionalProfileContent() {
         )}
 
         <div className={styles.ctaSection}>
-          <button className={styles.bookButton} onClick={() => alert('Booking functionality coming soon!')}>
-            Book This Professional
-          </button>
+          <Link href={`/professional/${id}/generate-quote`} passHref>
+            <button className={styles.bookButton}> {/* Re-using bookButton style for now */}
+              Generate Quote
+            </button>
+          </Link>
         </div>
       </div>
     </div>
