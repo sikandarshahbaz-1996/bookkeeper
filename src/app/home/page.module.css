@@ -363,6 +363,7 @@
 
 .heroImage {
   display: block; /* Removes any extra space below the image */
+  filter: hue-rotate(90deg); /* Example: shifts hues by 90 degrees */
   /* Add any specific image styling here if needed, e.g., border-radius */
 }
 
