@@ -901,7 +901,11 @@ function DashboardPage() {
                           </Link>
                         </>
                       ) : (
-                        `With: ${app.customerDetails?.name || 'N/A'}`
+                        <>
+                          With: <Link href={`/customer/${app.customerDetails?._id}`} className={styles.clickableName}>
+                            {app.customerDetails?.name || 'N/A'}
+                          </Link>
+                        </>
                       )}
                     </h3>
                     <span className={`${styles.statusBadge} ${styles[`status_${app.status?.toLowerCase().replace(/ /g, '_')}`]}`}>
