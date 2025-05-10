@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation'; // Import useSearchParams
 import Link from 'next/link'; // Import Link
+import ReviewModal from '@/app/components/ReviewModal/ReviewModal';
 import styles from './page.module.css';
 import { useAuth } from '@/context/AuthContext';
 import withAuth from '@/components/withAuth';
@@ -257,6 +258,12 @@ function DashboardPage() {
   const [appointments, setAppointments] = useState([]);
   const [isLoadingAppointments, setIsLoadingAppointments] = useState(false);
   const [appointmentsError, setAppointmentsError] = useState('');
+  const [customerReviews, setCustomerReviews] = useState([]); // For storing reviews by the current customer
+  const [isLoadingCustomerReviews, setIsLoadingCustomerReviews] = useState(false);
+
+  // State for Review Modal
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [currentAppointmentForReview, setCurrentAppointmentForReview] = useState(null);
   
   // State for professional actions on appointments
   const [showCounterModal, setShowCounterModal] = useState(false);
@@ -409,11 +416,41 @@ function DashboardPage() {
     }
   }, [token, logout]); // Added logout to dependency array
 
+  const fetchCustomerReviews = useCallback(async () => {
+    if (!token || !profileData || profileData.role !== 'customer') return;
+    setIsLoadingCustomerReviews(true);
+    try {
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+      };
+      if (profileData?._id) {
+        headers['x-user-id'] = profileData._id;
+      }
+      const response = await fetch('/api/reviews/me', {
+        method: 'GET',
+        headers: headers
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch your reviews.');
+      }
+      setCustomerReviews(data.reviews || []);
+    } catch (err) {
+      toast.error(`Error fetching your reviews: ${err.message}`);
+      // console.error("Error fetching customer reviews:", err);
+    } finally {
+      setIsLoadingCustomerReviews(false);
+    }
+  }, [token, profileData]);
+
   useEffect(() => {
     if (activeTab === 'appointments' && profileData) { // Ensure profileData is loaded to know the role
       fetchAppointments();
+      if (profileData.role === 'customer') {
+        fetchCustomerReviews();
+      }
     }
-  }, [activeTab, fetchAppointments, profileData]);
+  }, [activeTab, fetchAppointments, profileData, fetchCustomerReviews]);
 
 
   const handleAppointmentAction = async (appointmentId, actionType, priceForCounter = null) => {
@@ -632,9 +669,9 @@ function DashboardPage() {
     } catch (err) { setError(err.message); toast.error(`Error updating business information: ${err.message}`); } finally { setIsSaving(false); }
   };
 
-  const handleCancelBusinessEdit = () => { 
+  const handleCancelBusinessEdit = () => {
     const currentTz = profileData?.timezone || 'America/New_York';
-    const resetServicesOffered = Array.isArray(profileData?.servicesOffered) 
+    const resetServicesOffered = Array.isArray(profileData?.servicesOffered)
       ? profileData.servicesOffered.map(s_prof => {
           const serviceOpt = servicesOfferedSelectOptions.find(opt => opt.name === s_prof.name);
           return {
@@ -662,6 +699,20 @@ function DashboardPage() {
   const handleTimezoneChange = (e) => { setEditBusinessData(prev => ({ ...prev, timezone: e.target.value })); };
   const handleDayAvailabilityToggle = (dayName) => { setEditBusinessData(prev => ({ ...prev, availability: prev.availability.map(d => d.day===dayName ? {...d, isAvailable:!d.isAvailable} : d)})); };
   const handleTimeChange = (dayName,timeType,value) => { setEditBusinessData(prev => ({ ...prev, availability: prev.availability.map(d => d.day===dayName ? {...d, [timeType]:value} : d)})); };
+
+  const handleOpenReviewModal = (appointment) => {
+    setCurrentAppointmentForReview(appointment);
+    setIsReviewModalOpen(true);
+  };
+
+  const handleReviewSubmitted = ({ reviewId, appointmentId }) => {
+    // Add the new review to customerReviews to update UI immediately
+    // This is a simplified version; you might want to re-fetch or be more sophisticated
+    setCustomerReviews(prevReviews => [...prevReviews, { _id: reviewId, appointmentId: appointmentId /* add other review fields if needed for UI */ }]);
+    toast.success('Thank you for your review!');
+    // Optionally, re-fetch appointments if review status affects display beyond just the button
+    // fetchAppointments(); 
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -1007,12 +1058,35 @@ function DashboardPage() {
                         )}
                       </>
                     )}
+                    {/* "Leave Review" button for Customers on Completed Appointments */}
+                    {profileData?.role === 'customer' && app.status === 'completed' && 
+                      !customerReviews.find(review => review.appointmentId === app._id) && (
+                      <button
+                        onClick={() => handleOpenReviewModal(app)}
+                        className={`${styles.actionButton} ${styles.reviewButton}`} // Add a new style for this button
+                        disabled={isSubmittingAction} // Can reuse or have a dedicated loading state
+                      >
+                        Leave Review
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
+      )}
+
+      {/* Review Modal */}
+      {currentAppointmentForReview && profileData && (
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => { setIsReviewModalOpen(false); setCurrentAppointmentForReview(null); }}
+          appointmentId={currentAppointmentForReview._id}
+          professionalId={currentAppointmentForReview.professionalId}
+          customerId={profileData._id} // Logged-in user's ID
+          onSubmitReview={handleReviewSubmitted}
+        />
       )}
 
       {/* Counter Offer Modal */}

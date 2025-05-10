@@ -1,0 +1,184 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContent {
+  background-color: var(--background-color-light, #ffffff); /* Fallback to white */
+  color: var(--text-color-light, #333333); /* Fallback text color */
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+  animation: fadeInModal 0.3s ease-out;
+}
+
+html[data-theme='dark'] .modalContent {
+  background-color: var(--background-color-dark, #2d3748); /* Fallback to a dark grey */
+  color: var(--text-color-dark, #f7fafc); /* Fallback light text color for dark mode */
+}
+
+@keyframes fadeInModal {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.closeButton {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: var(--text-color-light);
+  padding: 5px;
+  line-height: 1;
+}
+
+html[data-theme='dark'] .closeButton {
+  color: var(--text-color-dark);
+}
+
+.closeButton:hover {
+  color: #ff4d4d;
+}
+
+.modalContent h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  text-align: center;
+}
+
+.starsContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.star {
+  font-size: 2.5rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out, transform 0.1s ease-in-out;
+  margin: 0 5px;
+}
+
+.star:hover,
+.star.filled {
+  color: #fadb14; /* Gold color for stars */
+}
+
+.star:hover {
+    transform: scale(1.1);
+}
+
+.ratingText {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-color-secondary-light);
+  margin-bottom: 20px;
+}
+
+html[data-theme='dark'] .ratingText {
+  color: var(--text-color-secondary-dark);
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.formGroup textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color-light, #cccccc); /* Fallback to a light grey border */
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: var(--input-background-light);
+  color: var(--input-text-color-light);
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+html[data-theme='dark'] .formGroup textarea {
+  border-color: var(--border-color-dark, #555555); /* Fallback to a medium grey border for dark mode */
+  background-color: var(--input-background-dark);
+  color: var(--input-text-color-dark);
+}
+
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.submitButton {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.submitButton:hover {
+  background-color: var(--primary-color-darker);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.submitButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.errorMessage,
+.successMessage {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.errorMessage {
+  background-color: #ffebe6;
+  color: #c00;
+  border: 1px solid #ffc2b3;
+}
+
+.successMessage {
+  background-color: #e6fff0;
+  color: #008037;
+  border: 1px solid #b3ffcf;
+}

@@ -265,3 +265,97 @@
     padding: 0.9rem 1.5rem;
   }
 }
+
+/* Review Display Styles */
+.starsDisplay {
+  display: flex;
+  align-items: center;
+  gap: 2px; /* Small gap between stars */
+  color: #fadb14; /* Gold color for stars */
+}
+
+.starIcon {
+  font-size: 1.1rem; /* Adjust size as needed */
+}
+
+.ratingNumeric {
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+  color: var(--secondary-color);
+}
+
+.averageRatingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: var(--foreground-color);
+}
+
+.noReviewsYetHeader {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.reviewsSection {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.reviewsSection h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.reviewsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.reviewCard {
+  background-color: var(--card-alt-bg, var(--background-color));
+  padding: 1.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap; /* Allow wrapping for smaller screens */
+  gap: 0.5rem;
+}
+
+.reviewCustomer {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--foreground-color);
+}
+
+.reviewComment {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--foreground-color);
+  margin-bottom: 0.75rem;
+  white-space: pre-wrap; /* Preserve formatting */
+}
+
+.reviewDate {
+  font-size: 0.85rem;
+  color: var(--secondary-color);
+  text-align: right;
+}

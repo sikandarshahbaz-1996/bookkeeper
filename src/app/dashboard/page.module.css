@@ -771,6 +771,15 @@
   background-color: var(--primary-color-hover);
 }
 
+.reviewButton { /* Style for the Leave Review button */
+  background-color: var(--info-color, #0dcaf0); /* Using info color, can be changed */
+  color: var(--primary-text-color); /* Assuming white/light text */
+  /* Inherits padding, font-size, font-weight, etc. from .actionButton */
+}
+.reviewButton:hover:not(:disabled) {
+  background-color: var(--info-color-hover, #0aa3c2); /* Darker shade for hover */
+}
+
 
 /* Modal styles - ensure they are robust */
 .modalBackdrop {

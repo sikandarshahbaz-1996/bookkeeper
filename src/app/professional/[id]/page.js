@@ -4,7 +4,24 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation'; // Import useRouter
 import Link from 'next/link';
 import styles from './page.module.css';
-import { FaArrowLeft, FaMapMarkerAlt, FaBriefcase, FaClock, FaGlobe, FaPhone, FaRegBuilding, FaUserTie, FaTools, FaStreetView, FaInfoCircle, FaEnvelope } from 'react-icons/fa'; // Added FaEnvelope
+import { FaArrowLeft, FaMapMarkerAlt, FaBriefcase, FaClock, FaGlobe, FaPhone, FaRegBuilding, FaUserTie, FaTools, FaStreetView, FaInfoCircle, FaEnvelope, FaStar, FaRegStar } from 'react-icons/fa'; // Added FaEnvelope, FaStar, FaRegStar
+
+// Helper component to display stars
+const DisplayStars = ({ rating, totalStars = 5 }) => {
+  const fullStars = Math.floor(rating);
+  const halfStar = rating % 1 >= 0.5 ? 1 : 0; // No half stars for now, simple floor
+  const emptyStars = totalStars - fullStars - halfStar; // Adjust if using half stars
+
+  return (
+    <div className={styles.starsDisplay}>
+      {[...Array(fullStars)].map((_, i) => <FaStar key={`full-${i}`} className={styles.starIcon} />)}
+      {/* {[...Array(halfStar)].map((_, i) => <FaStarHalfAlt key={`half-${i}`} />)} // If using half stars */}
+      {[...Array(emptyStars)].map((_, i) => <FaRegStar key={`empty-${i}`} className={styles.starIcon} />)}
+      <span className={styles.ratingNumeric}>({rating.toFixed(1)})</span>
+    </div>
+  );
+};
+
 
 function ProfessionalProfileContent() {
   const params = useParams();
@@ -14,11 +31,17 @@ function ProfessionalProfileContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [reviews, setReviews] = useState([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true);
+  const [reviewsError, setReviewsError] = useState('');
+  const [averageRating, setAverageRating] = useState(0);
+
   useEffect(() => {
     if (id) {
       const fetchProfessional = async () => {
         setLoading(true);
         setError('');
+        setProfessional(null); // Reset professional data on new ID
         try {
           const response = await fetch(`/api/professionals/${id}`);
           if (!response.ok) {
@@ -26,10 +49,15 @@ function ProfessionalProfileContent() {
             throw new Error(errorData.message || `Failed to fetch professional: ${response.statusText}`);
           }
           const data = await response.json();
+          // Check for a meaningful property like _id to ensure it's a valid professional object
+          if (!data || !data._id) { 
+            throw new Error('Professional not found.');
+          }
           setProfessional(data);
         } catch (err) {
-          console.error("Fetch error:", err);
+          console.error("Fetch professional error:", err);
           setError(err.message);
+          setProfessional(null); // Ensure professional is null on error
         } finally {
           setLoading(false);
         }
@@ -38,10 +66,55 @@ function ProfessionalProfileContent() {
     } else {
       setError('Professional ID not found in URL.');
       setLoading(false);
+      setProfessional(null);
     }
   }, [id]);
 
-  if (loading) {
+  // Separate useEffect for fetching reviews, dependent on 'id' and 'professional' being successfully fetched (and no main error)
+  useEffect(() => {
+    if (id && professional && !error) { // Only fetch reviews if professional exists and no primary error
+      const fetchReviews = async () => {
+        setIsLoadingReviews(true);
+        setReviewsError('');
+        setReviews([]); // Reset reviews
+        setAverageRating(0); // Reset average rating
+        try {
+          const res = await fetch(`/api/professionals/${id}/reviews`);
+          if (!res.ok) {
+            const errData = await res.json();
+            // If the reviews endpoint itself says "Professional not found", it's a bit redundant
+            // but we'll still set it. The main error display should take precedence.
+            throw new Error(errData.message || `Failed to fetch reviews: ${res.statusText}`);
+          }
+          const data = await res.json();
+          setReviews(data || []);
+          if (data && data.length > 0) {
+            const totalRating = data.reduce((acc, review) => acc + review.rating, 0);
+            setAverageRating(totalRating / data.length);
+          } else {
+            setAverageRating(0);
+          }
+        } catch (err) {
+          console.error("Fetch reviews error:", err);
+          setReviewsError(err.message);
+        } finally {
+          setIsLoadingReviews(false);
+        }
+      };
+      fetchReviews();
+    } else if (!professional && !loading && !error) {
+      // If professional is null after loading and there's no main error,
+      // it implies professional was not found by fetchProfessional.
+      // So, no need to attempt fetching reviews.
+      setIsLoadingReviews(false);
+      setReviews([]);
+      setAverageRating(0);
+      // Optionally set a specific reviews message like "Cannot load reviews as professional was not found."
+      // but the main "Professional not found" error should cover this.
+    }
+  }, [id, professional, error, loading]); // Add loading to dependencies
+
+  if (loading) { // Main loading state for professional data
     return <div className={styles.loading}>Loading professional profile...</div>;
   }
 
@@ -98,7 +171,17 @@ function ProfessionalProfileContent() {
           </button>
         </div>
         <header className={styles.header}>
-          <h1 className={styles.name}>{professional.name || 'N/A'}</h1> 
+          <h1 className={styles.name}>{professional.name || 'N/A'}</h1>
+          {/* Display Average Rating */}
+          {!isLoadingReviews && reviews.length > 0 && (
+            <div className={styles.averageRatingContainer}>
+              <DisplayStars rating={averageRating} />
+              <span>({reviews.length} review{reviews.length === 1 ? '' : 's'})</span>
+            </div>
+          )}
+          {!isLoadingReviews && reviews.length === 0 && averageRating === 0 && (
+            <p className={styles.noReviewsYetHeader}>No reviews yet</p>
+          )}
           {professional.profession && <p className={styles.profession}><FaUserTie /> {professional.profession}</p>}
           {professional.businessName && <p className={styles.company}><FaRegBuilding /> {professional.businessName}</p>}
         </header>
@@ -146,6 +229,34 @@ function ProfessionalProfileContent() {
               Get a Quote
             </button>
           </Link>
+        </div>
+
+        {/* Reviews Section */}
+        <div className={styles.reviewsSection}>
+          <h2>Customer Reviews</h2>
+          {isLoadingReviews && <p className={styles.loading}>Loading reviews...</p>}
+          {reviewsError && <p className={styles.error}>Could not load reviews: {reviewsError}</p>}
+          {!isLoadingReviews && !reviewsError && reviews.length === 0 && (
+            <p>This professional has no reviews yet.</p>
+          )}
+          {!isLoadingReviews && !reviewsError && reviews.length > 0 && (
+            <div className={styles.reviewsList}>
+              {reviews.map(review => (
+                <div key={review._id} className={styles.reviewCard}>
+                  <div className={styles.reviewHeader}>
+                    <DisplayStars rating={review.rating} />
+                    <span className={styles.reviewCustomer}>
+                      By: {review.customerName || 'Anonymous Customer'}
+                    </span>
+                  </div>
+                  {review.comment && <p className={styles.reviewComment}>{review.comment}</p>}
+                  <p className={styles.reviewDate}>
+                    Reviewed on: {new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
