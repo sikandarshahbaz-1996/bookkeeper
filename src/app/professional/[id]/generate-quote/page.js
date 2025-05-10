@@ -1,16 +1,99 @@
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
-import { FaArrowLeft, FaRegBuilding, FaUserTie, FaTrash } from 'react-icons/fa';
+import { FaArrowLeft, FaRegBuilding, FaUserTie, FaTrash, FaCalendarAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css'; // Default styling
+import { useAuth } from '@/context/AuthContext'; // For customerId
 
 // Helper to generate unique IDs for service instances
 const generateUniqueId = () => `service_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+// Helper to format date to YYYY-MM-DD
+const formatDateToYYYYMMDD = (date) => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Helper function to format HH:MM time to AM/PM for display
+// Assumes timeString is already in local HH:MM format
+const formatToAmPm = (timeString) => {
+  if (!timeString || !/^\d{2}:\d{2}$/.test(timeString)) return 'N/A';
+  const [hours, minutes] = timeString.split(':');
+  const h = parseInt(hours, 10);
+  const m = parseInt(minutes, 10);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const formattedHours = h % 12 || 12; // Convert 0 to 12 for 12 AM
+    return `${formattedHours}:${String(m).padStart(2, '0')} ${ampm}`;
+};
+
+// Helper to convert UTC HH:MM to local HH:MM based on a timezone
+const convertFromUTCHHMm = (utcTimeString, timezone) => {
+  if (!utcTimeString || !timezone || !/^\d{2}:\d{2}$/.test(utcTimeString)) return utcTimeString; // Return original if invalid
+  try {
+    const [hours, minutes] = utcTimeString.split(':').map(Number);
+    // Create a date object for today in UTC with the given time
+    const today = new Date();
+    const utcDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), hours, minutes));
+    
+    // Format this UTC date into the target timezone
+    const localTimeFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false, // Get HH:MM format
+    });
+    return localTimeFormatter.format(utcDate);
+  } catch (error) {
+    console.error("Error converting from UTC HH:mm to local:", error);
+    return utcTimeString; // Fallback to original UTC time string
+  }
+};
+
+// Helper function to format a slot with start and end time based on duration
+const formatSlotWithDuration = (utcSlotStartTime, durationMinutes, timezone) => {
+  if (!utcSlotStartTime || durationMinutes <= 0 || !timezone) {
+    return formatToAmPm(convertFromUTCHHMm(utcSlotStartTime, timezone)) || utcSlotStartTime; // Fallback
+  }
+
+  try {
+    // Get local start time
+    const localStartTimeHHMM = convertFromUTCHHMm(utcSlotStartTime, timezone);
+    const formattedLocalStartTime = formatToAmPm(localStartTimeHHMM);
+
+    // Calculate UTC end time
+    const [startHoursUTC, startMinutesUTC] = utcSlotStartTime.split(':').map(Number);
+    const tempDate = new Date(); // Use a temporary date object
+    tempDate.setUTCHours(startHoursUTC, startMinutesUTC, 0, 0); // Set time in UTC
+    
+    const utcEndDate = new Date(tempDate.getTime() + durationMinutes * 60000);
+    
+    const endHoursUTC = utcEndDate.getUTCHours();
+    const endMinutesUTC = utcEndDate.getUTCMinutes();
+    const utcEndTimeString = `${String(endHoursUTC).padStart(2, '0')}:${String(endMinutesUTC).padStart(2, '0')}`;
+
+    // Get local end time
+    const localEndTimeHHMM = convertFromUTCHHMm(utcEndTimeString, timezone);
+    const formattedLocalEndTime = formatToAmPm(localEndTimeHHMM);
+
+    return `${formattedLocalStartTime} - ${formattedLocalEndTime}`;
+  } catch (error) {
+    console.error("Error formatting slot with duration:", error);
+    // Fallback to just showing start time if an error occurs
+    return formatToAmPm(convertFromUTCHHMm(utcSlotStartTime, timezone)) || utcSlotStartTime;
+  }
+};
+
+
 function GenerateQuoteContent() {
+  const { user: currentUser } = useAuth(); // Get current user for customerId
   const params = useParams();
   const router = useRouter();
   const id = params?.id;
@@ -21,6 +104,17 @@ function GenerateQuoteContent() {
   
   const [selectedServices, setSelectedServices] = useState([]);
   const [generatedQuote, setGeneratedQuote] = useState(null);
+  const [totalServiceDurationMinutes, setTotalServiceDurationMinutes] = useState(0);
+
+  // Appointment booking states
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [availableSlots, setAvailableSlots] = useState([]); // Stores UTC slots from API
+  const [professionalTimezone, setProfessionalTimezone] = useState(null); // Initialize to null
+  const [selectedSlot, setSelectedSlot] = useState(null); // Stores the selected UTC slot string
+  const [customerNotes, setCustomerNotes] = useState('');
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
+
 
   useEffect(() => {
     if (id) {
@@ -35,8 +129,12 @@ function GenerateQuoteContent() {
           }
           const data = await response.json();
           setProfessional(data);
+          if (data.timezone) { // Assuming professional object has a timezone field
+            setProfessionalTimezone(data.timezone);
+          }
         } catch (err) {
           setError(err.message);
+          toast.error(err.message);
         } finally {
           setLoading(false);
         }
@@ -45,20 +143,142 @@ function GenerateQuoteContent() {
     } else {
       setError('Professional ID not found.');
       setLoading(false);
+      toast.error('Professional ID not found.');
     }
   }, [id]);
 
+  // Calculate total service duration whenever selectedServices changes
+  useEffect(() => {
+    const totalDuration = selectedServices.reduce((sum, service) => {
+      return sum + (Number(service.duration) || 0);
+    }, 0);
+    setTotalServiceDurationMinutes(totalDuration);
+    
+    // If no services are selected, clear the quote.
+    if (selectedServices.length === 0) {
+        setGeneratedQuote(null);
+    }
+    // Always clear slots and selected slot when services change, as duration might affect availability.
+    setAvailableSlots([]);
+    setSelectedSlot(null);
+  }, [selectedServices]);
+
+  const fetchAvailableSlots = useCallback(async (dateToFetch, duration) => {
+    if (!id || !dateToFetch || duration <= 0) {
+      setAvailableSlots([]);
+      return;
+    }
+    setIsLoadingSlots(true);
+    setAvailableSlots([]); // Clear previous slots
+    setSelectedSlot(null); // Clear selected slot
+    try {
+      const formattedDate = formatDateToYYYYMMDD(dateToFetch);
+      const response = await fetch(`/api/professionals/${id}/available-slots?date=${formattedDate}&serviceDuration=${duration}`);
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || 'Failed to fetch available slots.');
+      }
+      const data = await response.json();
+      setAvailableSlots(data.availableSlots || []);
+      if (data.professionalTimezone) {
+        setProfessionalTimezone(data.professionalTimezone);
+      }
+    } catch (err) {
+      toast.error(err.message);
+      setAvailableSlots([]);
+    } finally {
+      setIsLoadingSlots(false);
+    }
+  }, [id]); // `id` is a dependency
+
+  // Fetch slots when selectedDate or totalServiceDurationMinutes (if quote exists) changes
+  useEffect(() => {
+    if (generatedQuote && selectedDate && totalServiceDurationMinutes > 0) {
+      fetchAvailableSlots(selectedDate, totalServiceDurationMinutes);
+    } else {
+      setAvailableSlots([]); // Clear slots if no quote or duration is zero
+      setSelectedSlot(null);
+    }
+  }, [selectedDate, totalServiceDurationMinutes, generatedQuote, fetchAvailableSlots]);
+
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    // fetchAvailableSlots will be called by the useEffect above
+  };
+
+  const handleSlotSelect = (slot) => {
+    setSelectedSlot(slot);
+  };
+
+  const handleRequestAppointment = async () => {
+    if (!currentUser) {
+      toast.error("Please sign in to request an appointment.");
+      // router.push('/signin'); // Optionally redirect to signin
+      return;
+    }
+    if (!generatedQuote || !selectedSlot || !professional || !id) {
+      toast.error("Missing information to request appointment. Please select a service, generate a quote, pick a date and slot.");
+      return;
+    }
+
+    setIsBooking(true);
+    const appointmentData = {
+      customerId: currentUser._id,
+      professionalId: id,
+      services: selectedServices.map(s => ({
+        name: s.serviceName,
+        price: s.rate, // Assuming rate is the price per service for the quote context
+        duration: s.duration,
+      })),
+      totalDuration: totalServiceDurationMinutes,
+      appointmentDate: formatDateToYYYYMMDD(selectedDate),
+      startTime: selectedSlot, // This is local to professional, API will handle UTC conversion if needed
+      professionalTimezone: professionalTimezone, // Send professional's timezone
+      quotedPrice: parseFloat(generatedQuote.finalAmount),
+      customerNotes: customerNotes,
+    };
+
+    try {
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUser.token}` /* Assuming token is on user object */ },
+        body: JSON.stringify(appointmentData),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to request appointment.");
+      }
+      toast.success("Appointment requested successfully! The professional will review and confirm.");
+      // Reset relevant states
+      setGeneratedQuote(null);
+      setSelectedServices([]);
+      setSelectedDate(new Date());
+      setAvailableSlots([]);
+      setSelectedSlot(null);
+      setCustomerNotes('');
+      // Optionally, redirect to dashboard or an appointments page
+      // router.push('/dashboard'); 
+    } catch (err) {
+      toast.error(`Error requesting appointment: ${err.message}`);
+    } finally {
+      setIsBooking(false);
+    }
+  };
+
   const handleAddService = () => {
-    if (!professional?.servicesOffered || professional.servicesOffered.length === 0) { // Check servicesOffered
+    if (!professional?.servicesOffered || professional.servicesOffered.length === 0) {
       toast.warn("This professional currently offers no services to select.");
       return;
     }
+    const firstService = professional.servicesOffered[0];
     setSelectedServices([
       ...selectedServices,
       {
-        id: generateUniqueId(), // Unique ID for this instance of service selection
-        serviceName: professional.servicesOffered[0]?.name || "Unknown Service", 
-        rate: professional.servicesOffered[0]?.hourlyRate !== undefined ? professional.servicesOffered[0]?.hourlyRate : 0,
+        id: generateUniqueId(),
+        serviceName: firstService?.name || "Unknown Service", 
+        rate: firstService?.hourlyRate !== undefined ? firstService.hourlyRate : 0,
+        duration: firstService?.duration || 60, // Add duration, default 60 mins
         transactions: '',
         bankReconciliation: 'no',
         financialStatements: 'no',
@@ -71,11 +291,12 @@ function GenerateQuoteContent() {
       selectedServices.map(s => {
         if (s.id === instanceId) {
           if (field === 'serviceName') {
-            const selectedServiceDetail = professional.servicesOffered.find(pSvc => pSvc.name === value); // Use servicesOffered
+            const selectedServiceDetail = professional.servicesOffered.find(pSvc => pSvc.name === value);
             return { 
               ...s, 
               serviceName: value, 
-              rate: selectedServiceDetail?.hourlyRate !== undefined ? selectedServiceDetail.hourlyRate : 0 
+              rate: selectedServiceDetail?.hourlyRate !== undefined ? selectedServiceDetail.hourlyRate : 0,
+              duration: selectedServiceDetail?.duration || s.duration // Update duration, keep old if new one not found
             };
           }
           return { ...s, [field]: value };
@@ -87,11 +308,21 @@ function GenerateQuoteContent() {
 
   const handleRemoveService = (instanceId) => {
     setSelectedServices(selectedServices.filter(s => s.id !== instanceId));
+    // If removing a service clears the quote, also clear appointment related states
+    if (selectedServices.length === 1) { // about to become 0
+        setGeneratedQuote(null);
+        setAvailableSlots([]);
+        setSelectedSlot(null);
+        setCustomerNotes('');
+    }
   };
 
   const calculateQuote = () => {
     if (selectedServices.length === 0) {
       toast.error("Please add at least one service to generate a quote.");
+      setGeneratedQuote(null); // Clear previous quote if services are removed
+      setAvailableSlots([]);
+      setSelectedSlot(null);
       return;
     }
 
@@ -248,10 +479,86 @@ function GenerateQuoteContent() {
             </small>
           </div>
         )}
-      </div>
-    </div>
+
+        {/* Appointment Booking Section - Moved outside and below quoteResult if quote is generated */}
+        {generatedQuote && (
+          <div className={styles.appointmentSection}>
+            <h2 className={styles.sectionTitle}><FaCalendarAlt /> Book Your Appointment</h2> {/* Changed to h2 for consistency */}
+            <div className={styles.calendarContainer}>
+                <Calendar
+                  onChange={handleDateChange}
+                  value={selectedDate}
+                  minDate={new Date()} // Disable past dates
+                  tileDisabled={({ date, view }) => 
+                    view === 'month' && date.toDateString() === new Date().toDateString() // Disable today
+                  }
+                  className={styles.reactCalendar}
+                />
+              </div>
+
+              {isLoadingSlots && <p className={styles.loadingSlots}>Loading available slots...</p>}
+              
+              {!isLoadingSlots && generatedQuote && totalServiceDurationMinutes > 0 && availableSlots.length > 0 && (
+                <div className={styles.slotsContainer}>
+                  <h4>Available Slots for {selectedDate.toLocaleDateString()}:</h4>
+                  <div className={styles.slotButtons}>
+                    {availableSlots.map(slot => (
+                      <button
+                        key={slot} // slot is UTC HH:MM
+                        onClick={() => handleSlotSelect(slot)}
+                        className={`${styles.slotButton} ${selectedSlot === slot ? styles.selectedSlotButton : ''}`}
+                      >
+                        {professionalTimezone && totalServiceDurationMinutes > 0 
+                          ? formatSlotWithDuration(slot, totalServiceDurationMinutes, professionalTimezone)
+                          : (professionalTimezone ? formatToAmPm(convertFromUTCHHMm(slot, professionalTimezone)) : slot)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!isLoadingSlots && generatedQuote && totalServiceDurationMinutes > 0 && availableSlots.length === 0 && professionalTimezone && (
+                 <p className={styles.noSlots}>
+                    {selectedDate ? 'No slots available for this date or the selected services exceed available time blocks. Please try another date or adjust services.' : 'Please select a date to see available slots.'}
+                 </p>
+              )}
+              {!isLoadingSlots && generatedQuote && totalServiceDurationMinutes > 0 && !professionalTimezone && (
+                <p className={styles.noSlots}>Loading professional timezone information to display slots...</p>
+              )}
+
+
+              {generatedQuote && selectedSlot && (
+                <div className={styles.notesAndBookContainer}>
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="customerNotes" className={styles.label}>Notes for the Professional (Optional):</label>
+                    <textarea
+                      id="customerNotes"
+                      value={customerNotes}
+                      onChange={(e) => setCustomerNotes(e.target.value)}
+                      className={styles.textarea}
+                      rows="3"
+                      placeholder="e.g., specific questions, preferred contact method"
+                    />
+                  </div>
+                  <button 
+                    onClick={handleRequestAppointment} 
+                    className={styles.requestAppointmentButton}
+                    disabled={isBooking || !currentUser}
+                  >
+                    {isBooking ? 'Requesting...' : (currentUser ? 'Request Appointment' : 'Sign in to Request')}
+                  </button>
+                  {!currentUser && <p className={styles.signInPrompt}>You need to be signed in to request an appointment.</p>}
+                </div>
+              )}
+            </div>
+        )}
+      </div> {/* End of quoteFormLayout */}
+    </div> /* End of pageContainer */
   );
 }
+
+
+// formatToAmPm is already defined at the top level of the module.
 
 export default function GenerateQuotePage() {
   return (

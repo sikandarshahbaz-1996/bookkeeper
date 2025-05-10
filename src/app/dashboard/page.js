@@ -55,6 +55,17 @@ for (let h = 0; h < 24; h++) {
     timeOptions.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
   }
 }
+
+// Define defaultProfessionalAvailability outside the component
+const defaultProfessionalAvailabilityDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const defaultProfessionalAvailability = defaultProfessionalAvailabilityDays.reduce((acc, dayKey) => {
+  acc[dayKey] = {
+    isActive: !['saturday', 'sunday'].includes(dayKey), // Weekdays active by default
+    workingHours: [{ startTime: '09:00', endTime: '17:00' }] // Default single slot
+  };
+  return acc;
+}, {});
+
 let commonTimeZones = [];
 try {
   const allTimeZones = Intl.supportedValuesOf('timeZone');
@@ -237,8 +248,20 @@ function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
-  const [serviceRateErrors, setServiceRateErrors] = useState({}); 
+  const [serviceRateErrors, setServiceRateErrors] = useState({});
   
+  
+  // State for appointments
+  const [appointments, setAppointments] = useState([]);
+  const [isLoadingAppointments, setIsLoadingAppointments] = useState(false);
+  const [appointmentsError, setAppointmentsError] = useState('');
+  
+  // State for professional actions on appointments
+  const [showCounterModal, setShowCounterModal] = useState(false);
+  const [currentAppointmentForCounter, setCurrentAppointmentForCounter] = useState(null);
+  const [counterPrice, setCounterPrice] = useState('');
+  const [isSubmittingAction, setIsSubmittingAction] = useState(false);
+
   const autocompleteRef = useRef(null);
   const { isLoaded, loadError } = useJsApiLoader({ googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, libraries });
 
@@ -281,10 +304,37 @@ function DashboardPage() {
       setEditBusinessData({
         businessName: data.user.businessName || '', businessAddress: data.user.businessAddress || '',
         businessPhone: data.user.businessPhone || '', businessEmail: data.user.businessEmail || '',
-        servicesOffered: initialServicesOffered, 
-        timezone: userTimezone, 
-        availability: initialAvailability,
+        servicesOffered: initialServicesOffered,
+        timezone: userTimezone,
+        availability: initialAvailability, // This is for the old availability system
       });
+
+      // Populate new professionalAvailability state
+      const profAvailFromProfile = JSON.parse(JSON.stringify(defaultProfessionalAvailability)); // Start with default
+      if (data.user.availability && Array.isArray(data.user.availability)) {
+        data.user.availability.forEach(daySchedule => {
+          const dayKey = daySchedule.day.toLowerCase();
+          if (profAvailFromProfile[dayKey]) {
+            profAvailFromProfile[dayKey].isActive = daySchedule.isAvailable;
+            if (daySchedule.isAvailable && daySchedule.startTime && daySchedule.endTime) {
+              const localStartTime = convertFromUTCHHMm(daySchedule.startTime, userTimezone);
+              const localEndTime = convertFromUTCHHMm(daySchedule.endTime, userTimezone);
+              if (localStartTime && localEndTime) {
+                // The old structure only had one slot, so we set it as the first/only slot.
+                // If the new API returns multiple slots in the future for data.user.availability, this logic would need updating.
+                profAvailFromProfile[dayKey].workingHours = [{ startTime: localStartTime, endTime: localEndTime }];
+              } else {
+                profAvailFromProfile[dayKey].workingHours = [{ startTime: '09:00', endTime: '17:00' }]; // Fallback
+              }
+            } else if (!daySchedule.isAvailable) {
+              profAvailFromProfile[dayKey].workingHours = [];
+            }
+          }
+        });
+      }
+      // Later, if data.user.professionalDetailedAvailability (or similar field for new structure) exists, prioritize it.
+      // For now, we transform the old `data.user.availability`.
+      // setProfessionalAvailability(profAvailFromProfile); // This state is being removed
 
     } catch (err) {
       setError(err.message); toast.error(`Error fetching profile: ${err.message}`);
@@ -295,6 +345,98 @@ function DashboardPage() {
   }, [token, logout]);
 
   useEffect(() => { fetchProfile(); }, [fetchProfile]);
+
+  const fetchAppointments = useCallback(async () => {
+    if (!token) {
+      setAppointmentsError('Authentication token not found.');
+      // logout(); // Consider if logout is appropriate here
+      return;
+    }
+    setIsLoadingAppointments(true);
+    setAppointmentsError('');
+    try {
+      const response = await fetch('/api/appointments/me', {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch appointments.');
+      }
+      setAppointments(data.appointments || []);
+    } catch (err) {
+      setAppointmentsError(err.message);
+      toast.error(`Error fetching appointments: ${err.message}`);
+      if (err.message.includes('Invalid or expired token')) logout();
+    } finally {
+      setIsLoadingAppointments(false);
+    }
+  }, [token, logout]); // Added logout to dependency array
+
+  useEffect(() => {
+    if (activeTab === 'appointments' && profileData) { // Ensure profileData is loaded to know the role
+      fetchAppointments();
+    }
+  }, [activeTab, fetchAppointments, profileData]);
+
+
+  const handleAppointmentAction = async (appointmentId, actionType, priceForCounter = null) => {
+    if (!token) {
+      toast.error("Authentication required.");
+      return;
+    }
+    setIsSubmittingAction(true);
+    try {
+      const payload = { action: actionType };
+      if (actionType === 'counter' && priceForCounter !== null) {
+        payload.finalPrice = parseFloat(priceForCounter);
+        if (isNaN(payload.finalPrice) || payload.finalPrice < 0) {
+          toast.error("Invalid counter price.");
+          setIsSubmittingAction(false);
+          return;
+        }
+      }
+
+      const response = await fetch(`/api/appointments/${appointmentId}/action`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || `Failed to ${actionType} appointment.`);
+      }
+      toast.success(data.message || `Appointment ${actionType} successful!`);
+      fetchAppointments(); // Refresh the list
+      if (actionType === 'counter') {
+        setShowCounterModal(false);
+        setCounterPrice('');
+        setCurrentAppointmentForCounter(null);
+      }
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsSubmittingAction(false);
+    }
+  };
+
+  const openCounterModal = (appointment) => {
+    setCurrentAppointmentForCounter(appointment);
+    setCounterPrice(appointment.quotedPrice ? String(appointment.quotedPrice) : ''); // Pre-fill with current quote
+    setShowCounterModal(true);
+  };
+
+  const handleSubmitCounterOffer = () => {
+    if (!currentAppointmentForCounter || counterPrice === '') {
+      toast.error("Please enter a valid counter price.");
+      return;
+    }
+    handleAppointmentAction(currentAppointmentForCounter._id, 'counter', counterPrice);
+  };
+
 
   const handleEditInputChange = (e) => { const { name, value } = e.target; setEditData(prev => ({ ...prev, [name]: value })); };
   const handleEditCheckboxChange = (listName, value) => { 
@@ -515,188 +657,338 @@ function DashboardPage() {
         <div className={styles.tabs}>
           <button className={`${styles.tabButton} ${activeTab === 'profile' ? styles.activeTab : ''}`} onClick={() => setActiveTab('profile')}>Profile</button>
           <button className={`${styles.tabButton} ${activeTab === 'business' ? styles.activeTab : ''}`} onClick={() => setActiveTab('business')}>Business</button>
+          <button className={`${styles.tabButton} ${activeTab === 'appointments' ? styles.activeTab : ''}`} onClick={() => setActiveTab('appointments')}>Appointments</button>
         </div>
       )}
-      {profileData.role === 'professional' ? (
-        <>
-          {activeTab === 'profile' && (
-            <ProfileContent
-              isEditing={isEditing} setIsEditing={setIsEditing} editData={editData} profileData={profileData}
-              handleEditInputChange={handleEditInputChange} handleSaveChanges={handleSaveChanges} handleCancelEdit={handleCancelEdit}
-              handleEditDynamicListChange={handleEditDynamicListChange} addEditDynamicListItem={addEditDynamicListItem} removeEditDynamicListItem={removeEditDynamicListItem}
-              handleEditCheckboxChange={handleEditCheckboxChange} isSaving={isSaving} styles={styles}
-              generalAreasOfExpertiseOptions={generalAreasOfExpertiseOptions} // Corrected: Pass general options
-              languageOptions={languageOptions} softwareProficiencyOptions={softwareProficiencyOptions}
-            />
-          )}
-          {activeTab === 'business' && (
-            <div className={styles.profileSection}>
-              <div className={styles.profileHeader}>
-                <div></div> {/* For spacing */}
-                {!isEditingBusiness ? (
-                  <button className={styles.editButton} onClick={() => setIsEditingBusiness(true)}>Edit Business Information</button>
-                ) : (
-                  <div className={styles.editActions}>
-                    <button className={styles.saveButton} onClick={handleSaveBusinessChanges} disabled={isSaving}>{isSaving ? 'Saving...' : 'Save Changes'}</button>
-                    <button className={styles.cancelButton} onClick={handleCancelBusinessEdit} disabled={isSaving}>Cancel</button>
-                  </div>
-                )}
-              </div>
-              <div className={styles.infoBlock}>
-                <h3>Business Details</h3>
-                <div className={styles.formRow}>
-                  <label htmlFor="businessName"><strong>Name:</strong></label>
-                  {isEditingBusiness ? <input type="text" id="businessName" name="businessName" value={editBusinessData.businessName || ''} onChange={handleBusinessInputChange} className={styles.input} /> : <span>{profileData.businessName || <em className={styles.emptyField}>empty</em>}</span>}
-                </div>
-                <div className={styles.formRow}>
-                  <label htmlFor="businessAddress"><strong>Address:</strong></label>
-                  <div className={styles.inputFieldContainer}>
-                    {isEditingBusiness ? (
-                      isLoaded ? (
-                        <Autocomplete
-                          onLoad={(autocomplete) => { autocompleteRef.current = autocomplete; }}
-                          onPlaceChanged={() => {
-                            if (autocompleteRef.current) {
-                              const place = autocompleteRef.current.getPlace();
-                              if (place && place.formatted_address) setEditBusinessData(prev => ({ ...prev, businessAddress: place.formatted_address }));
-                              else if (place && place.name) setEditBusinessData(prev => ({ ...prev, businessAddress: place.name }));
-                            }
-                          }}
-                        >
-                          <input type="text" id="businessAddress" name="businessAddress" placeholder="Start typing your business address" value={editBusinessData.businessAddress || ''} onChange={handleBusinessInputChange} className={styles.input}/>
-                        </Autocomplete>
-                      ) : <input type="text" id="businessAddress" name="businessAddress" placeholder="Loading address suggestions..." value={editBusinessData.businessAddress || ''} onChange={handleBusinessInputChange} className={styles.input} disabled />
-                    ) : (
-                      <span>{profileData.businessAddress || <em className={styles.emptyField}>empty</em>}</span>
-                    )}
-                    {loadError && isEditingBusiness && <p className={styles.inlineError}>Could not load address suggestions.</p>}
-                  </div>
-                </div>
-                <div className={styles.formRow}>
-                  <label htmlFor="businessPhone"><strong>Phone:</strong></label>
-                  {isEditingBusiness ? <input type="tel" id="businessPhone" name="businessPhone" value={editBusinessData.businessPhone || ''} onChange={handleBusinessInputChange} className={styles.input} /> : <span>{profileData.businessPhone || <em className={styles.emptyField}>empty</em>}</span>}
-                </div>
-                <div className={styles.formRow}>
-                  <label htmlFor="businessEmail"><strong>Business Email:</strong></label>
-                  {isEditingBusiness ? <input type="email" id="businessEmail" name="businessEmail" value={editBusinessData.businessEmail || ''} onChange={handleBusinessInputChange} className={styles.input} /> : <span>{profileData.businessEmail || <em className={styles.emptyField}>empty</em>}</span>}
-                </div>
-              </div>
-              <div className={styles.infoBlock}>
-                <h3>Services Offered</h3>
-                {isEditingBusiness ? (
-                  <div className={styles.checkboxGridServices}>
-                    {servicesOfferedSelectOptions.map(serviceOption => { 
-                      const serviceData = (editBusinessData.servicesOffered || []).find(s => s.name === serviceOption.name); 
-                      const isChecked = !!serviceData;
-                      return (
-                        <div key={serviceOption.name} className={styles.serviceRateItem}>
-                          <label className={styles.checkboxLabel}>
-                            <input type="checkbox" checked={isChecked} onChange={() => handleBusinessCheckboxChange(serviceOption.name)} /> 
-                            {serviceOption.name} (Min. ${serviceOption.minPrice}/hr)
-                          </label>
-                          {isChecked && (
-                            <div className={styles.serviceInputsContainer}> {/* Changed class for better styling potential */}
-                              <div className={styles.rateInputContainer}>
-                                <label htmlFor={`rate-${serviceOption.name}`} className={styles.inlineLabel}>Rate ($/hr):</label>
-                                <input 
-                                  type="number" 
-                                  id={`rate-${serviceOption.name}`}
-                                  placeholder="Your Rate" 
-                                  value={serviceData.rate || ''} 
-                                  onChange={(e) => handleServiceRateChange(serviceOption.name, e.target.value)} 
-                                  className={`${styles.input} ${styles.rateInput}`} 
-                                  min={serviceOption.minPrice} 
-                                  step="0.01"
-                                />
-                                {serviceRateErrors[serviceOption.name] && <p className={styles.inlineError}>{serviceRateErrors[serviceOption.name]}</p>}
-                              </div>
-                              <div className={styles.durationInputContainer}>
-                                <label htmlFor={`duration-${serviceOption.name}`} className={styles.inlineLabel}>Duration:</label>
-                                <select
-                                  id={`duration-${serviceOption.name}`}
-                                  value={serviceData.duration || 60}
-                                  onChange={(e) => handleServiceDurationChange(serviceOption.name, e.target.value)}
-                                  className={`${styles.input} ${styles.durationSelect}`}
-                                >
-                                  {serviceDurationOptions.map(opt => (
-                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                  ))}
-                                </select>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : ( 
-                  profileData.servicesOffered?.length > 0 ? (
-                    <ul className={styles.serviceListDisplay}>
-                      {profileData.servicesOffered.map((s, i) => (
-                        <li key={i}>
-                          {s.name}: {s.hourlyRate != null && s.hourlyRate !== '' ? `$${s.hourlyRate}/hr` : <em className={styles.emptyField}>No rate set</em>}
-                          {s.duration ? ` - ${formatDuration(s.duration)}` : ''}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p><em className={styles.emptyField}>No services listed.</em></p>
-                  )
-                )}
-              </div>
-              <div className={styles.infoBlock}>
-                <h3>Availability</h3>
-                {isEditingBusiness ? (
-                  <>
-                    <div className={styles.formRow}>
-                      <label htmlFor="timezone"><strong>Timezone:</strong></label>
-                      <select id="timezone" name="timezone" value={editBusinessData.timezone || 'America/New_York'} onChange={handleTimezoneChange} className={styles.input}>
-                        {commonTimeZones.map(tz => <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>)}
-                      </select>
-                    </div>
-                    {editBusinessData.availability && editBusinessData.availability.map((daySchedule) => (
-                      <div key={daySchedule.day} className={styles.dayAvailabilityRow}>
-                        <div className={styles.dayNameContainer}>
-                          <input type="checkbox" id={`available-${daySchedule.day}`} checked={daySchedule.isAvailable} onChange={() => handleDayAvailabilityToggle(daySchedule.day)} className={styles.availabilityToggle} />
-                          <label htmlFor={`available-${daySchedule.day}`} className={styles.dayLabel}><strong>{daySchedule.day}</strong></label>
-                        </div>
-                        {daySchedule.isAvailable ? (
-                          <div className={styles.timeSelectors}>
-                            <select value={daySchedule.startTime} onChange={(e) => handleTimeChange(daySchedule.day, 'startTime', e.target.value)} className={styles.input}>
-                              {timeOptions.map(time => <option key={`start-${time}`} value={time}>{formatToAmPm(time)}</option>)}
-                            </select>
-                            <span>to</span>
-                            <select value={daySchedule.endTime} onChange={(e) => handleTimeChange(daySchedule.day, 'endTime', e.target.value)} className={styles.input}>
-                              {timeOptions.map(time => <option key={`end-${time}`} value={time}>{formatToAmPm(time)}</option>)}
-                            </select>
-                          </div>
-                        ) : <span className={styles.dayOffText}>Unavailable</span>}
-                      </div>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    <div className={styles.formRow}><label><strong>Timezone:</strong></label><span>{profileData.timezone ? profileData.timezone.replace(/_/g, ' ') : <em className={styles.emptyField}>Not set</em>}</span></div>
-                    <ul>
-                      {(profileData.availability || []).map((daySchedule, i) => (
-                        <li key={i}><strong>{daySchedule.day}:</strong> {daySchedule.isAvailable ? `${daySchedule.startTime ? formatToAmPm(convertFromUTCHHMm(daySchedule.startTime, profileData.timezone)) : 'N/A'} - ${daySchedule.endTime ? formatToAmPm(convertFromUTCHHMm(daySchedule.endTime, profileData.timezone)) : 'N/A'}` : 'Unavailable'}</li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </>
-      ) : (
+      {/* Customer also needs an appointments tab */}
+      {profileData.role === 'customer' && (
+         <div className={styles.tabs}>
+            {/* Assuming customers might have a profile/settings tab eventually, or just appointments */}
+            <button className={`${styles.tabButton} ${activeTab === 'profile' ? styles.activeTab : ''}`} onClick={() => setActiveTab('profile')}>Profile</button>
+            <button className={`${styles.tabButton} ${activeTab === 'appointments' ? styles.activeTab : ''}`} onClick={() => setActiveTab('appointments')}>Appointments</button>
+        </div>
+      )}
+
+      {activeTab === 'profile' && (
+        // ProfileContent is used by both roles if activeTab is 'profile'
         <ProfileContent
           isEditing={isEditing} setIsEditing={setIsEditing} editData={editData} profileData={profileData}
           handleEditInputChange={handleEditInputChange} handleSaveChanges={handleSaveChanges} handleCancelEdit={handleCancelEdit}
           handleEditDynamicListChange={handleEditDynamicListChange} addEditDynamicListItem={addEditDynamicListItem} removeEditDynamicListItem={removeEditDynamicListItem}
           handleEditCheckboxChange={handleEditCheckboxChange} isSaving={isSaving} styles={styles}
-          generalAreasOfExpertiseOptions={generalAreasOfExpertiseOptions} // Corrected: Pass general options
+          generalAreasOfExpertiseOptions={generalAreasOfExpertiseOptions}
           languageOptions={languageOptions} softwareProficiencyOptions={softwareProficiencyOptions}
         />
+      )}
+
+      {profileData.role === 'professional' && activeTab === 'business' && (
+        <div className={styles.profileSection}> {/* Re-using profileSection for consistent styling */}
+          <div className={styles.profileHeader}>
+            <div></div> {/* For spacing */}
+            {!isEditingBusiness ? (
+              <button className={styles.editButton} onClick={() => setIsEditingBusiness(true)}>Edit Business Information</button>
+            ) : (
+              <div className={styles.editActions}>
+                <button className={styles.saveButton} onClick={handleSaveBusinessChanges} disabled={isSaving}>{isSaving ? 'Saving...' : 'Save Changes'}</button>
+                <button className={styles.cancelButton} onClick={handleCancelBusinessEdit} disabled={isSaving}>Cancel</button>
+              </div>
+            )}
+          </div>
+          {/* ... existing business content ... */}
+          <div className={styles.infoBlock}>
+            <h3>Business Details</h3>
+            <div className={styles.formRow}>
+              <label htmlFor="businessName"><strong>Name:</strong></label>
+              {isEditingBusiness ? <input type="text" id="businessName" name="businessName" value={editBusinessData.businessName || ''} onChange={handleBusinessInputChange} className={styles.input} /> : <span>{profileData.businessName || <em className={styles.emptyField}>empty</em>}</span>}
+            </div>
+            <div className={styles.formRow}>
+              <label htmlFor="businessAddress"><strong>Address:</strong></label>
+              <div className={styles.inputFieldContainer}>
+                {isEditingBusiness ? (
+                  isLoaded ? (
+                    <Autocomplete
+                      onLoad={(autocomplete) => { autocompleteRef.current = autocomplete; }}
+                      onPlaceChanged={() => {
+                        if (autocompleteRef.current) {
+                          const place = autocompleteRef.current.getPlace();
+                          if (place && place.formatted_address) setEditBusinessData(prev => ({ ...prev, businessAddress: place.formatted_address }));
+                          else if (place && place.name) setEditBusinessData(prev => ({ ...prev, businessAddress: place.name }));
+                        }
+                      }}
+                    >
+                      <input type="text" id="businessAddress" name="businessAddress" placeholder="Start typing your business address" value={editBusinessData.businessAddress || ''} onChange={handleBusinessInputChange} className={styles.input}/>
+                    </Autocomplete>
+                  ) : <input type="text" id="businessAddress" name="businessAddress" placeholder="Loading address suggestions..." value={editBusinessData.businessAddress || ''} onChange={handleBusinessInputChange} className={styles.input} disabled />
+                ) : (
+                  <span>{profileData.businessAddress || <em className={styles.emptyField}>empty</em>}</span>
+                )}
+                {loadError && isEditingBusiness && <p className={styles.inlineError}>Could not load address suggestions.</p>}
+              </div>
+            </div>
+            <div className={styles.formRow}>
+              <label htmlFor="businessPhone"><strong>Phone:</strong></label>
+              {isEditingBusiness ? <input type="tel" id="businessPhone" name="businessPhone" value={editBusinessData.businessPhone || ''} onChange={handleBusinessInputChange} className={styles.input} /> : <span>{profileData.businessPhone || <em className={styles.emptyField}>empty</em>}</span>}
+            </div>
+            <div className={styles.formRow}>
+              <label htmlFor="businessEmail"><strong>Business Email:</strong></label>
+              {isEditingBusiness ? <input type="email" id="businessEmail" name="businessEmail" value={editBusinessData.businessEmail || ''} onChange={handleBusinessInputChange} className={styles.input} /> : <span>{profileData.businessEmail || <em className={styles.emptyField}>empty</em>}</span>}
+            </div>
+          </div>
+          <div className={styles.infoBlock}>
+            <h3>Services Offered</h3>
+            {isEditingBusiness ? (
+              <div className={styles.checkboxGridServices}>
+                {servicesOfferedSelectOptions.map(serviceOption => { 
+                  const serviceData = (editBusinessData.servicesOffered || []).find(s => s.name === serviceOption.name); 
+                  const isChecked = !!serviceData;
+                  return (
+                    <div key={serviceOption.name} className={styles.serviceRateItem}>
+                      <label className={styles.checkboxLabel}>
+                        <input type="checkbox" checked={isChecked} onChange={() => handleBusinessCheckboxChange(serviceOption.name)} /> 
+                        {serviceOption.name} (Min. ${serviceOption.minPrice}/hr)
+                      </label>
+                      {isChecked && (
+                        <div className={styles.serviceInputsContainer}> {/* Changed class for better styling potential */}
+                          <div className={styles.rateInputContainer}>
+                            <label htmlFor={`rate-${serviceOption.name}`} className={styles.inlineLabel}>Rate ($/hr):</label>
+                            <input 
+                              type="number" 
+                              id={`rate-${serviceOption.name}`}
+                              placeholder="Your Rate" 
+                              value={serviceData.rate || ''} 
+                              onChange={(e) => handleServiceRateChange(serviceOption.name, e.target.value)} 
+                              className={`${styles.input} ${styles.rateInput}`} 
+                              min={serviceOption.minPrice} 
+                              step="0.01"
+                            />
+                            {serviceRateErrors[serviceOption.name] && <p className={styles.inlineError}>{serviceRateErrors[serviceOption.name]}</p>}
+                          </div>
+                          <div className={styles.durationInputContainer}>
+                            <label htmlFor={`duration-${serviceOption.name}`} className={styles.inlineLabel}>Duration:</label>
+                            <select
+                              id={`duration-${serviceOption.name}`}
+                              value={serviceData.duration || 60}
+                              onChange={(e) => handleServiceDurationChange(serviceOption.name, e.target.value)}
+                              className={`${styles.input} ${styles.durationSelect}`}
+                            >
+                              {serviceDurationOptions.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : ( 
+              profileData.servicesOffered?.length > 0 ? (
+                <ul className={styles.serviceListDisplay}>
+                  {profileData.servicesOffered.map((s, i) => (
+                    <li key={i}>
+                      {s.name}: {s.hourlyRate != null && s.hourlyRate !== '' ? `$${s.hourlyRate}/hr` : <em className={styles.emptyField}>No rate set</em>}
+                      {s.duration ? ` - ${formatDuration(s.duration)}` : ''}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p><em className={styles.emptyField}>No services listed.</em></p>
+              )
+            )}
+          </div>
+          <div className={styles.infoBlock}>
+            <h3>Availability</h3>
+            {isEditingBusiness ? (
+              <>
+                <div className={styles.formRow}>
+                  <label htmlFor="timezone"><strong>Timezone:</strong></label>
+                  <select id="timezone" name="timezone" value={editBusinessData.timezone || 'America/New_York'} onChange={handleTimezoneChange} className={styles.input}>
+                    {commonTimeZones.map(tz => <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>)}
+                  </select>
+                </div>
+                {editBusinessData.availability && editBusinessData.availability.map((daySchedule) => (
+                  <div key={daySchedule.day} className={styles.dayAvailabilityRow}>
+                    <div className={styles.dayNameContainer}>
+                      <input type="checkbox" id={`available-${daySchedule.day}`} checked={daySchedule.isAvailable} onChange={() => handleDayAvailabilityToggle(daySchedule.day)} className={styles.availabilityToggle} />
+                      <label htmlFor={`available-${daySchedule.day}`} className={styles.dayLabel}><strong>{daySchedule.day}</strong></label>
+                    </div>
+                    {daySchedule.isAvailable ? (
+                      <div className={styles.timeSelectors}>
+                        <select value={daySchedule.startTime} onChange={(e) => handleTimeChange(daySchedule.day, 'startTime', e.target.value)} className={styles.input}>
+                          {timeOptions.map(time => <option key={`start-${time}`} value={time}>{formatToAmPm(time)}</option>)}
+                        </select>
+                        <span>to</span>
+                        <select value={daySchedule.endTime} onChange={(e) => handleTimeChange(daySchedule.day, 'endTime', e.target.value)} className={styles.input}>
+                          {timeOptions.map(time => <option key={`end-${time}`} value={time}>{formatToAmPm(time)}</option>)}
+                        </select>
+                      </div>
+                    ) : <span className={styles.dayOffText}>Unavailable</span>}
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                <div className={styles.formRow}><label><strong>Timezone:</strong></label><span>{profileData.timezone ? profileData.timezone.replace(/_/g, ' ') : <em className={styles.emptyField}>Not set</em>}</span></div>
+                <ul>
+                  {(profileData.availability || []).map((daySchedule, i) => (
+                    <li key={i}><strong>{daySchedule.day}:</strong> {daySchedule.isAvailable ? `${daySchedule.startTime ? formatToAmPm(convertFromUTCHHMm(daySchedule.startTime, profileData.timezone)) : 'N/A'} - ${daySchedule.endTime ? formatToAmPm(convertFromUTCHHMm(daySchedule.endTime, profileData.timezone)) : 'N/A'}` : 'Unavailable'}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+
+          {/* The "Detailed Weekly Availability (for Appointments)" section has been removed. */}
+          {/* Professionals will use the existing "Availability" section under "Business Details" */}
+        </div>
+      )}
+      
+      {activeTab === 'appointments' && (
+        <div className={styles.appointmentsSection}>
+          <h2>My Appointments</h2>
+          {isLoadingAppointments && <p>Loading appointments...</p>}
+          {appointmentsError && <p className={styles.errorText}>{appointmentsError}</p>}
+          {!isLoadingAppointments && !appointmentsError && appointments.length === 0 && (
+            <p>You have no appointments.</p>
+          )}
+          {!isLoadingAppointments && !appointmentsError && appointments.length > 0 && (
+            <div className={styles.appointmentsGrid}>
+              {appointments.map(app => (
+                <div key={app._id} className={styles.appointmentCard}>
+                  <div className={styles.appointmentCardHeader}>
+                    <h3>
+                      {profileData.role === 'customer' 
+                        ? `With: ${app.professionalDetails?.name || 'N/A'}` 
+                        : `With: ${app.customerDetails?.name || 'N/A'}`}
+                    </h3>
+                    <span className={`${styles.statusBadge} ${styles[`status_${app.status?.toLowerCase().replace(/ /g, '_')}`]}`}>
+                      {app.status ? app.status.replace(/_/g, ' ') : 'Unknown Status'}
+                    </span>
+                  </div>
+                  <p><strong>Date:</strong> {new Date(app.appointmentDate + 'T00:00:00Z').toLocaleDateString()} {/* Ensure date is treated as UTC for consistent display */}</p>
+                  <p>
+                    <strong>Time:</strong> 
+                    {app.startTime ? formatToAmPm(convertFromUTCHHMm(app.startTime, app.professionalTimezone || 'UTC')) : 'N/A'} - 
+                    {app.endTime ? formatToAmPm(convertFromUTCHHMm(app.endTime, app.professionalTimezone || 'UTC')) : 'N/A'}
+                    <small> ({app.professionalTimezone ? app.professionalTimezone.replace(/_/g, ' ') : 'UTC'})</small>
+                  </p>
+                  <p><strong>Price:</strong> ${app.finalPrice?.toFixed(2) || app.quotedPrice?.toFixed(2) || 'N/A'} 
+                     {app.finalPrice !== app.quotedPrice && app.status === 'countered_by_professional' && 
+                       <span className={styles.originalPrice}>(Original: ${app.quotedPrice?.toFixed(2)})</span>}
+                  </p>
+                  <div className={styles.servicesList}>
+                    <strong>Services:</strong>
+                    <ul>
+                      {(app.services || []).map((s, i) => <li key={i}>{s.name} ({s.duration} mins) - ${s.price?.toFixed(2)}</li>)}
+                    </ul>
+                  </div>
+                  {app.customerNotes && <p><strong>Customer Notes:</strong> {app.customerNotes}</p>}
+                  
+                  <div className={styles.appointmentActions}>
+                    {profileData?.role === 'professional' && app.status === 'pending_professional_approval' && (
+                      <>
+                        <button 
+                          onClick={() => handleAppointmentAction(app._id, 'confirm')} 
+                          className={`${styles.actionButton} ${styles.confirmButton}`}
+                          disabled={isSubmittingAction}
+                        >
+                          {isSubmittingAction ? 'Processing...' : 'Confirm'}
+                        </button>
+                        <button 
+                          onClick={() => handleAppointmentAction(app._id, 'reject')} 
+                          className={`${styles.actionButton} ${styles.rejectButton}`}
+                          disabled={isSubmittingAction}
+                        >
+                          {isSubmittingAction ? 'Processing...' : 'Reject'}
+                        </button>
+                        <button 
+                          onClick={() => openCounterModal(app)} 
+                          className={`${styles.actionButton} ${styles.counterButton}`}
+                          disabled={isSubmittingAction}
+                        >
+                          {isSubmittingAction ? 'Processing...' : 'Counter Offer'}
+                        </button>
+                      </>
+                    )}
+                    {profileData?.role === 'customer' && app.status === 'countered_by_professional' && (
+                      <>
+                        <button
+                          onClick={() => handleAppointmentAction(app._id, 'accept_counter')}
+                          className={`${styles.actionButton} ${styles.confirmButton}`} // Re-use confirm style for accept
+                          disabled={isSubmittingAction}
+                        >
+                          {isSubmittingAction ? 'Processing...' : 'Accept Counter'}
+                        </button>
+                        <button
+                          onClick={() => handleAppointmentAction(app._id, 'reject_counter')}
+                          className={`${styles.actionButton} ${styles.rejectButton}`} // Re-use reject style
+                          disabled={isSubmittingAction}
+                        >
+                          {isSubmittingAction ? 'Processing...' : 'Reject Counter'}
+                        </button>
+                      </>
+                    )}
+                    {/* Cancellation Buttons for Confirmed Appointments */}
+                    {app.status === 'confirmed' && (
+                      <>
+                        {profileData?.role === 'customer' && (
+                          <button
+                            onClick={() => handleAppointmentAction(app._id, 'cancel_by_customer')}
+                            className={`${styles.actionButton} ${styles.cancelAppointmentButton}`}
+                            disabled={isSubmittingAction}
+                          >
+                            {isSubmittingAction ? 'Processing...' : 'Cancel My Appointment'}
+                          </button>
+                        )}
+                        {profileData?.role === 'professional' && (
+                           <button
+                            onClick={() => handleAppointmentAction(app._id, 'cancel_by_professional')}
+                            className={`${styles.actionButton} ${styles.cancelAppointmentButton}`}
+                            disabled={isSubmittingAction}
+                          >
+                            {isSubmittingAction ? 'Processing...' : 'Cancel Appointment'}
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Counter Offer Modal */}
+      {showCounterModal && currentAppointmentForCounter && (
+        <div className={styles.modalBackdrop}>
+          <div className={styles.modalContent}>
+            <h3>Counter Offer</h3>
+            <p>Original Quoted Price: ${currentAppointmentForCounter.quotedPrice?.toFixed(2)}</p>
+            <div className={styles.inputGroup}>
+              <label htmlFor="counterPrice">New Price ($):</label>
+              <input
+                type="number"
+                id="counterPrice"
+                value={counterPrice}
+                onChange={(e) => setCounterPrice(e.target.value)}
+                className={styles.input}
+                placeholder="Enter new price"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div className={styles.modalActions}>
+              <button onClick={handleSubmitCounterOffer} className={styles.saveButton} disabled={isSubmittingAction || !counterPrice}>
+                {isSubmittingAction ? 'Submitting...' : 'Submit Counter'}
+              </button>
+              <button onClick={() => { setShowCounterModal(false); setCurrentAppointmentForCounter(null); setCounterPrice('');}} className={styles.cancelButton} disabled={isSubmittingAction}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
