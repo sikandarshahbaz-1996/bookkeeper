@@ -492,7 +492,6 @@ function GenerateQuoteContent() {
                   tileDisabled={({ date, view }) => 
                     view === 'month' && date.toDateString() === new Date().toDateString() // Disable today
                   }
-                  className={styles.reactCalendar}
                 />
               </div>
 

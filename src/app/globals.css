@@ -173,3 +173,11 @@ a:hover {
     color-scheme: dark;
   }
 } */
+
+.react-calendar button {
+  color: black !important;
+}
+
+.react-calendar__tile--active {
+  background-color: #6ea6e0 !important;
+}
