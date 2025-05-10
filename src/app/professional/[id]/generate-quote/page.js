@@ -107,7 +107,9 @@ function GenerateQuoteContent() {
   const [totalServiceDurationMinutes, setTotalServiceDurationMinutes] = useState(0);
 
   // Appointment booking states
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const [selectedDate, setSelectedDate] = useState(tomorrow);
   const [availableSlots, setAvailableSlots] = useState([]); // Stores UTC slots from API
   const [professionalTimezone, setProfessionalTimezone] = useState(null); // Initialize to null
   const [selectedSlot, setSelectedSlot] = useState(null); // Stores the selected UTC slot string
@@ -258,7 +260,7 @@ function GenerateQuoteContent() {
       setSelectedSlot(null);
       setCustomerNotes('');
       // Optionally, redirect to dashboard or an appointments page
-      // router.push('/dashboard'); 
+      router.push('/dashboard'); 
     } catch (err) {
       toast.error(`Error requesting appointment: ${err.message}`);
     } finally {
@@ -488,10 +490,13 @@ function GenerateQuoteContent() {
                 <Calendar
                   onChange={handleDateChange}
                   value={selectedDate}
-                  minDate={new Date()} // Disable past dates
-                  tileDisabled={({ date, view }) => 
-                    view === 'month' && date.toDateString() === new Date().toDateString() // Disable today
-                  }
+                  minDate={tomorrow} // Disable past dates, including today
+                  tileDisabled={({ date, view }) => {
+                    // Disable today explicitly if minDate logic isn't sufficient for styling or other checks
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Normalize today to start of day
+                    return view === 'month' && date.getTime() === today.getTime();
+                  }}
                 />
               </div>
 
