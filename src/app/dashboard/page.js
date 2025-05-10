@@ -868,7 +868,7 @@ function DashboardPage() {
                   </div>
                   <p><strong>Date:</strong> {new Date(app.appointmentDate + 'T00:00:00Z').toLocaleDateString()} {/* Ensure date is treated as UTC for consistent display */}</p>
                   <p>
-                    <strong>Time:</strong> 
+                    <strong>Time: </strong> 
                     {app.startTime ? formatToAmPm(convertFromUTCHHMm(app.startTime, app.professionalTimezone || 'UTC')) : 'N/A'} - 
                     {app.endTime ? formatToAmPm(convertFromUTCHHMm(app.endTime, app.professionalTimezone || 'UTC')) : 'N/A'}
                     <small> ({app.professionalTimezone ? app.professionalTimezone.replace(/_/g, ' ') : 'UTC'})</small>
