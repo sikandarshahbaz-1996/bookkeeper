@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation'; // Import useSearchParams
+import Link from 'next/link'; // Import Link
 import styles from './page.module.css';
 import { useAuth } from '@/context/AuthContext';
 import withAuth from '@/components/withAuth';
@@ -229,11 +230,12 @@ const libraries = ['places'];
 function DashboardPage() {
   const { token, logout } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams(); // Get search params
   const [searchQuery, setSearchQuery] = useState('');
 
   const [activeTab, setActiveTab] = useState('profile');
-  const [profileData, setProfileData] = useState(null); 
-  const [editData, setEditData] = useState(null); 
+  const [profileData, setProfileData] = useState(null);
+  const [editData, setEditData] = useState(null);
   
   const [editBusinessData, setEditBusinessData] = useState({
     businessName: '', businessAddress: '', businessPhone: '', businessEmail: '',
@@ -345,6 +347,40 @@ function DashboardPage() {
   }, [token, logout]);
 
   useEffect(() => { fetchProfile(); }, [fetchProfile]);
+
+  // Effect to set active tab from query parameter
+  useEffect(() => {
+    const tabFromQuery = searchParams.get('tab');
+    if (tabFromQuery) {
+      // Validate tabFromQuery based on role if necessary, or assume valid for now
+      // For example, a customer shouldn't be able to set 'business'
+      if (profileData) { // Ensure profileData is loaded to know the role
+        const validTabsForRole = profileData.role === 'professional'
+          ? ['profile', 'business', 'appointments']
+          : ['profile', 'appointments'];
+        if (validTabsForRole.includes(tabFromQuery)) {
+          setActiveTab(tabFromQuery);
+        } else {
+          // Optionally, redirect to a default tab or show an error if an invalid tab is provided for the role
+          setActiveTab('profile'); // Default to profile
+          router.push('/dashboard?tab=profile', { scroll: false });
+        }
+      } else {
+        // If profileData isn't loaded yet, we might set it naively and let fetchProfile/role check handle it,
+        // or wait for profileData. For simplicity, let's set it and re-evaluate when profileData loads.
+         const preliminaryValidTabs = ['profile', 'business', 'appointments']; // All possible tabs
+         if (preliminaryValidTabs.includes(tabFromQuery)) {
+            setActiveTab(tabFromQuery);
+         }
+      }
+    }
+  }, [searchParams, profileData, router]);
+
+
+  const handleTabChange = (tabName) => {
+    setActiveTab(tabName);
+    router.push(`/dashboard?tab=${tabName}`, { scroll: false }); // Update URL
+  };
 
   const fetchAppointments = useCallback(async () => {
     if (!token) {
@@ -655,17 +691,17 @@ function DashboardPage() {
 
       {profileData.role === 'professional' && (
         <div className={styles.tabs}>
-          <button className={`${styles.tabButton} ${activeTab === 'profile' ? styles.activeTab : ''}`} onClick={() => setActiveTab('profile')}>Profile</button>
-          <button className={`${styles.tabButton} ${activeTab === 'business' ? styles.activeTab : ''}`} onClick={() => setActiveTab('business')}>Business</button>
-          <button className={`${styles.tabButton} ${activeTab === 'appointments' ? styles.activeTab : ''}`} onClick={() => setActiveTab('appointments')}>Appointments</button>
+          <button className={`${styles.tabButton} ${activeTab === 'profile' ? styles.activeTab : ''}`} onClick={() => handleTabChange('profile')}>Profile</button>
+          <button className={`${styles.tabButton} ${activeTab === 'business' ? styles.activeTab : ''}`} onClick={() => handleTabChange('business')}>Business</button>
+          <button className={`${styles.tabButton} ${activeTab === 'appointments' ? styles.activeTab : ''}`} onClick={() => handleTabChange('appointments')}>Appointments</button>
         </div>
       )}
       {/* Customer also needs an appointments tab */}
       {profileData.role === 'customer' && (
          <div className={styles.tabs}>
             {/* Assuming customers might have a profile/settings tab eventually, or just appointments */}
-            <button className={`${styles.tabButton} ${activeTab === 'profile' ? styles.activeTab : ''}`} onClick={() => setActiveTab('profile')}>Profile</button>
-            <button className={`${styles.tabButton} ${activeTab === 'appointments' ? styles.activeTab : ''}`} onClick={() => setActiveTab('appointments')}>Appointments</button>
+            <button className={`${styles.tabButton} ${activeTab === 'profile' ? styles.activeTab : ''}`} onClick={() => handleTabChange('profile')}>Profile</button>
+            <button className={`${styles.tabButton} ${activeTab === 'appointments' ? styles.activeTab : ''}`} onClick={() => handleTabChange('appointments')}>Appointments</button>
         </div>
       )}
 
@@ -858,9 +894,15 @@ function DashboardPage() {
                 <div key={app._id} className={styles.appointmentCard}>
                   <div className={styles.appointmentCardHeader}>
                     <h3>
-                      {profileData.role === 'customer' 
-                        ? `With: ${app.professionalDetails?.name || 'N/A'}` 
-                        : `With: ${app.customerDetails?.name || 'N/A'}`}
+                      {profileData.role === 'customer' ? (
+                        <>
+                          With: <Link href={`/professional/${app.professionalId}`} className={styles.clickableName}>
+                            {app.professionalDetails?.name || 'N/A'}
+                          </Link>
+                        </>
+                      ) : (
+                        `With: ${app.customerDetails?.name || 'N/A'}`
+                      )}
                     </h3>
                     <span className={`${styles.statusBadge} ${styles[`status_${app.status?.toLowerCase().replace(/ /g, '_')}`]}`}>
                       {app.status ? app.status.replace(/_/g, ' ') : 'Unknown Status'}
@@ -869,7 +911,7 @@ function DashboardPage() {
                   <p><strong>Date:</strong> {new Date(app.appointmentDate + 'T00:00:00Z').toLocaleDateString()} {/* Ensure date is treated as UTC for consistent display */}</p>
                   <p>
                     <strong>Time: </strong> 
-                    {app.startTime ? formatToAmPm(convertFromUTCHHMm(app.startTime, app.professionalTimezone || 'UTC')) : 'N/A'} - 
+                    {app.startTime ? formatToAmPm(convertFromUTCHHMm(app.startTime, app.professionalTimezone || 'UTC')) : 'N/A'} - {' '} 
                     {app.endTime ? formatToAmPm(convertFromUTCHHMm(app.endTime, app.professionalTimezone || 'UTC')) : 'N/A'}
                     <small> ({app.professionalTimezone ? app.professionalTimezone.replace(/_/g, ' ') : 'UTC'})</small>
                   </p>

@@ -94,7 +94,7 @@ function ProfessionalProfileContent() {
       <div className={styles.profileLayout}>
         <div className={styles.navigationHeader}>
           <button onClick={() => router.back()} className={styles.backButton}>
-            <FaArrowLeft /> Back to Search
+            <FaArrowLeft /> Back
           </button>
         </div>
         <header className={styles.header}>

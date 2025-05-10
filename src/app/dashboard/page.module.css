@@ -596,6 +596,17 @@
   margin-right: 10px; /* Space between title and badge */
 }
 
+.clickableName {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600; /* Make it slightly bolder than surrounding text if needed */
+}
+
+.clickableName:hover {
+  text-decoration: underline;
+  color: var(--primary-color-hover);
+}
+
 .statusBadge {
   padding: 5px 12px;
   border-radius: 15px;
