@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'; // Import useSearc
 import Link from 'next/link'; // Import Link
 import ReviewModal from '@/app/components/ReviewModal/ReviewModal';
 import styles from './page.module.css';
+import { FaStar, FaRegStar } from 'react-icons/fa'; // For displaying stars
 import { useAuth } from '@/context/AuthContext';
 import withAuth from '@/components/withAuth';
 import { toast } from 'react-toastify';
@@ -261,6 +262,13 @@ function DashboardPage() {
   const [customerReviews, setCustomerReviews] = useState([]); // For storing reviews by the current customer
   const [isLoadingCustomerReviews, setIsLoadingCustomerReviews] = useState(false);
 
+  // State for professional's own reviews (for business tab)
+  const [professionalReviews, setProfessionalReviews] = useState([]);
+  const [isLoadingProfessionalReviews, setIsLoadingProfessionalReviews] = useState(false);
+  const [professionalReviewsError, setProfessionalReviewsError] = useState('');
+  const [averageRatingForProfessional, setAverageRatingForProfessional] = useState(0);
+
+
   // State for Review Modal
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [currentAppointmentForReview, setCurrentAppointmentForReview] = useState(null);
@@ -443,14 +451,46 @@ function DashboardPage() {
     }
   }, [token, profileData]);
 
+  const fetchProfessionalReviews = useCallback(async () => {
+    if (!token || !profileData || profileData.role !== 'professional' || !profileData._id) return;
+    setIsLoadingProfessionalReviews(true);
+    setProfessionalReviewsError('');
+    try {
+      const response = await fetch(`/api/professionals/${profileData._id}/reviews`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` } // Assuming this API doesn't need x-user-id for this specific case
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch your reviews.');
+      }
+      setProfessionalReviews(data || []);
+      if (data && data.length > 0) {
+        const totalRating = data.reduce((acc, review) => acc + review.rating, 0);
+        setAverageRatingForProfessional(totalRating / data.length);
+      } else {
+        setAverageRatingForProfessional(0);
+      }
+    } catch (err) {
+      setProfessionalReviewsError(err.message);
+      toast.error(`Error fetching your reviews: ${err.message}`);
+    } finally {
+      setIsLoadingProfessionalReviews(false);
+    }
+  }, [token, profileData]);
+
   useEffect(() => {
-    if (activeTab === 'appointments' && profileData) { // Ensure profileData is loaded to know the role
-      fetchAppointments();
-      if (profileData.role === 'customer') {
-        fetchCustomerReviews();
+    if (profileData) { // Ensure profileData is loaded to know the role
+      if (activeTab === 'appointments') {
+        fetchAppointments();
+        if (profileData.role === 'customer') {
+          fetchCustomerReviews();
+        }
+      } else if (activeTab === 'business' && profileData.role === 'professional') {
+        fetchProfessionalReviews();
       }
     }
-  }, [activeTab, fetchAppointments, profileData, fetchCustomerReviews]);
+  }, [activeTab, fetchAppointments, profileData, fetchCustomerReviews, fetchProfessionalReviews]);
 
 
   const handleAppointmentAction = async (appointmentId, actionType, priceForCounter = null) => {
@@ -928,6 +968,41 @@ function DashboardPage() {
 
           {/* The "Detailed Weekly Availability (for Appointments)" section has been removed. */}
           {/* Professionals will use the existing "Availability" section under "Business Details" */}
+
+          {/* Display Reviews for Professional */}
+          <div className={styles.reviewsSectionDashboard}>
+            <h3>Your Reviews</h3>
+            {isLoadingProfessionalReviews && <p>Loading reviews...</p>}
+            {professionalReviewsError && <p className={styles.errorText}>Error loading reviews: {professionalReviewsError}</p>}
+            {!isLoadingProfessionalReviews && !professionalReviewsError && professionalReviews.length === 0 && (
+              <p>You have no reviews yet.</p>
+            )}
+            {!isLoadingProfessionalReviews && !professionalReviewsError && professionalReviews.length > 0 && (
+              <>
+                <div className={styles.averageRatingDashboard}>
+                  <strong>Average Rating: </strong>
+                  <DisplayStarsDashboard rating={averageRatingForProfessional} /> 
+                  ({professionalReviews.length} review{professionalReviews.length === 1 ? '' : 's'})
+                </div>
+                <div className={styles.reviewsListDashboard}>
+                  {professionalReviews.map(review => (
+                    <div key={review._id} className={styles.reviewCardDashboard}>
+                      <div className={styles.reviewHeaderDashboard}>
+                        <DisplayStarsDashboard rating={review.rating} />
+                        <span className={styles.reviewCustomerNameDashboard}>
+                          By: {review.customerName || 'Anonymous Customer'}
+                        </span>
+                      </div>
+                      {review.comment && <p className={styles.reviewCommentDashboard}>{review.comment}</p>}
+                      <p className={styles.reviewDateDashboard}>
+                        Reviewed on: {new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
       
@@ -1122,5 +1197,19 @@ function DashboardPage() {
     </div>
   );
 }
+
+// Helper component to display stars (can be moved to a shared file later)
+const DisplayStarsDashboard = ({ rating, totalStars = 5 }) => {
+  const fullStars = Math.floor(rating);
+  const emptyStars = totalStars - fullStars;
+
+  return (
+    <span className={styles.starsDisplayDashboard}> {/* Use span if it's inline with text */}
+      {[...Array(fullStars)].map((_, i) => <FaStar key={`full-${i}`} className={styles.starIconDashboard} />)}
+      {[...Array(emptyStars)].map((_, i) => <FaRegStar key={`empty-${i}`} className={styles.starIconDashboard} />)}
+      <span className={styles.ratingNumericDashboard}>({rating % 1 === 0 ? rating.toFixed(0) : rating.toFixed(1)})</span>
+    </span>
+  );
+};
 
 export default withAuth(DashboardPage);

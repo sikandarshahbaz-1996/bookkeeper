@@ -887,3 +887,99 @@
     font-size: 1.3rem;
   }
 }
+
+/* Styles for Reviews in Dashboard Business Tab */
+.reviewsSectionDashboard {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.reviewsSectionDashboard h3 {
+  font-size: 1.4rem; /* Slightly smaller than main section titles */
+  color: var(--primary-color);
+  margin-bottom: 20px;
+}
+
+.averageRatingDashboard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+  font-size: 1rem;
+}
+
+.averageRatingDashboard strong {
+  font-weight: 600;
+}
+
+.starsDisplayDashboard {
+  display: inline-flex; /* To align with text */
+  align-items: center;
+  gap: 2px;
+  color: #fadb14; /* Gold color for stars */
+}
+
+.starIconDashboard {
+  font-size: 1.1rem; 
+}
+
+.ratingNumericDashboard {
+  font-size: 0.9rem;
+  margin-left: 0.3rem;
+  color: var(--secondary-color);
+}
+
+.reviewsListDashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.reviewCardDashboard {
+  background-color: var(--background-color); /* Slightly different background if needed, or same as page */
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color-light, #e0e0e0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+html[data-theme='dark'] .reviewCardDashboard {
+  border-color: var(--border-color-dark, #4a5568);
+}
+
+.reviewHeaderDashboard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reviewCustomerNameDashboard {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--foreground-color);
+}
+
+.reviewCommentDashboard {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--foreground-color);
+  margin-top: 8px;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+}
+
+.reviewDateDashboard {
+  font-size: 0.8rem;
+  color: var(--secondary-color);
+  text-align: right;
+  margin-top: 5px;
+}
+
+.errorText { /* General error text style if not already defined globally */
+  color: var(--error-color, #dc3545);
+  font-size: 0.9rem;
+}
