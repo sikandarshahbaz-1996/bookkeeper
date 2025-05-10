@@ -35,6 +35,8 @@
   margin-bottom: 1rem;
   line-height: 1.2;
   text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Subtle text shadow, might need adjustment for dark mode */
+  position: relative; /* Ensure stacking context */
+  z-index: 2; /* Above the image */
 }
 
 .description {
@@ -44,6 +46,8 @@
   margin-left: auto;
   margin-right: auto;
   opacity: 0.95; /* Slightly less transparent */
+  position: relative; /* Ensure stacking context */
+  z-index: 2; /* Above the image */
 }
 
 .ctaContainer {
@@ -51,6 +55,8 @@
   justify-content: center;
   gap: 1.5rem; /* Increased gap */
   flex-wrap: wrap;
+  position: relative; /* Ensure stacking context */
+  z-index: 2; /* Above the image */
 }
 
 .ctaButton {
@@ -79,13 +85,20 @@
 }
 
 .ctaButtonSecondary {
-  background-color: transparent;
-  color: var(--hero-button-secondary-text);
-  border: 2px solid var(--hero-button-secondary-border);
+  /* Glassmorphism properties */
+  background-color: var(--hero-button-secondary-hover-bg, rgba(255, 255, 255)); /* More opaque background, fallback to a light semi-solid */
+  backdrop-filter: blur(50px); /* Frosted glass effect for elements behind */
+  -webkit-backdrop-filter: blur(50px); /* Safari support */
+  border: 1px solid var(--hero-button-secondary-border, rgba(255, 255, 255, 0.3)); /* Use existing border var or a fallback */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow for depth */
+
+  color: var(--hero-button-secondary-text); /* Keep existing text color or adjust for contrast */
+  /* Ensure padding and other properties from .ctaButton are still effective */
 }
 
 .ctaButtonSecondary:hover {
-  background-color: var(--hero-button-secondary-hover-bg);
+  border-color: var(--hero-button-secondary-border, rgba(255, 255, 255, 0.4));
+  /* Keep other hover effects from .ctaButton:hover if desired */
 }
 
 .section {
@@ -340,6 +353,19 @@
 
 /* .footer style removed, moved to Footer component */
 
+.heroImageContainer {
+  position: absolute;
+  bottom: 20px; /* Adjust as needed for spacing from the bottom */
+  right: 20px; /* Adjust as needed for spacing from the right */
+  z-index: 1; /* Lower z-index to be behind other hero content */
+  /* The framer-motion div will handle its own transform for animation */
+}
+
+.heroImage {
+  display: block; /* Removes any extra space below the image */
+  /* Add any specific image styling here if needed, e.g., border-radius */
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .title {
@@ -381,6 +407,23 @@
   .benefitIcon {
     font-size: 2.5rem;
   }
+
+  .heroImageContainer {
+    bottom: 10px;
+    right: 10px;
+    /* Adjust width/height of the image itself via its props if it's too large on mobile */
+  }
+
+  /* If you want to scale down the image on smaller screens, 
+     you might need to adjust the width/height props in the JS
+     or use CSS transforms if the container size is what you control.
+     For Next/Image, direct width/height props are usually better.
+     Alternatively, you can hide it on very small screens: */
+  /*
+  .heroImageContainer {
+    display: none; 
+  }
+  */
 }
 
 @media (max-width: 480px) {
@@ -402,6 +445,15 @@
     width: 100%; /* Make buttons full width on mobile */
     padding: 0.9rem 1rem; /* Adjusted */
   }
+
+  .ctaButtonSecondary { /* Specific mobile style for this button */
+    background-color: rgb(116, 84, 174);
+    backdrop-filter: none; 
+    -webkit-backdrop-filter: none;
+    /* Ensure text color has good contrast with this new background */
+    /* color: white; */ /* Example: if needed */
+  }
+
   .section {
     padding: 3rem 1rem; /* Adjusted */
   }
@@ -457,4 +509,11 @@
   .featureCard, .stepCard, .benefitCard {
     padding: 2rem 1.5rem; /* Adjusted */
   }
+
+  /* Example: Hide image on very small screens if it clutters the UI */
+  /*
+  .heroImageContainer {
+    display: none;
+  }
+  */
 }

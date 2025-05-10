@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'; // Import useRouter
 import { useAuth } from '@/context/AuthContext'; // Import useAuth
 import styles from './page.module.css';
 import Link from 'next/link';
+import Image from 'next/image'; // Import Next Image
 import { motion } from 'framer-motion'; // Import motion
 // Import specific icons from react-icons
 import { FaUserCheck, FaLock, FaChartLine } from 'react-icons/fa';
@@ -147,6 +148,36 @@ export default function HomePage() {
               I'm a Professional
             </motion.button>
           </Link>
+        </motion.div>
+        {/* Floating Book Image */}
+        <motion.div
+          className={styles.heroImageContainer}
+          initial={{ opacity: 0, y: 50, x: 50 }} // Initial animation
+          animate={{ 
+            opacity: 1, 
+            y: ["-8px", "8px"], // Slow up and down movement
+            x: 0, // Slide in from right
+            transition: { 
+              opacity: { duration: 0.8, delay: 1.2 }, // Fade in after other elements
+              x: { duration: 0.8, delay: 1.2, ease: "easeOut" },
+              y: { 
+                repeat: Infinity, 
+                repeatType: "reverse", 
+                duration: 1, // Slower movement
+                ease: "easeInOut" 
+              } 
+            }
+          }}
+          whileHover={{ scale: 1.15, transition: { duration: 0.3 } }} // Get bigger on hover
+        >
+          <Image
+            src="/books.png"
+            alt="Decorative books illustration"
+            width={200} // Adjust as needed
+            height={200} // Adjust as needed
+            className={styles.heroImage} // Optional: if you need specific image styling beyond container
+            priority // Load image sooner if it's critical for LCP
+          />
         </motion.div>
       </motion.div>
 
