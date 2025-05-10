@@ -122,14 +122,14 @@
 }
 
 
-.featuresGrid, .stepsGrid, .benefitsGrid {
+.featuresGrid, .benefitsGrid { /* Removed .stepsGrid here */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2.5rem; /* Increased gap */
 }
 
-/* Add justify-content to stepsGrid and benefitsGrid */
-.stepsGrid, .benefitsGrid {
+/* Add justify-content to benefitsGrid */
+.benefitsGrid { /* Removed .stepsGrid here */
   justify-content: center; /* Center grid items horizontally */
 }
 
@@ -139,7 +139,7 @@
   padding: 2.5rem 2rem; /* Increased padding */
   border-radius: 12px;
   box-shadow: var(--card-shadow); 
-  text-align: left;
+  text-align: left; /* Default, will be overridden for stepCard */
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   border: 1px solid transparent; /* Prepare for border hover */
 }
@@ -147,64 +147,150 @@
 .sectionSecondary .featureCard {
     background-color: var(--card-alt-bg); 
 }
-.howItWorksSection .stepCard {
-    /* background-color: var(--card-alt-bg); */ /* Removed to use default card background like other cards */
-    text-align: center;
-}
+
+/* .howItWorksSection .stepCard specific styles are now part of .stepsTimeline */
+
 .whyChooseUsSection .benefitCard {
     text-align: center;
 }
 
 
-.featureCard:hover, .stepCard:hover, .benefitCard:hover {
+.featureCard:hover, .benefitCard:hover { /* Removed .stepCard:hover here, will be handled by .stepsTimeline .stepCard:hover */
   transform: translateY(-8px); /* More lift */
   box-shadow: 0 14px 28px rgba(0,0,0,0.1); /* Consider a variable for hover shadow */
   border-color: var(--primary-color); 
 }
 
-.featureCard h3, .stepCard h3, .benefitCard h3 {
+.featureCard h3, .benefitCard h3 { /* Removed .stepCard h3 here */
   font-size: 1.5rem; /* Slightly larger */
   font-weight: 600;
   margin-bottom: 1rem; /* Increased space */
   color: var(--primary-color);
   text-align: center; /* Center align card titles */
 }
-/* Removed color override for step/benefit card h3 */
-/* .stepCard h3, .benefitCard h3 {
-    color: var(--foreground-color); 
-} */
 
 
-.featureCard p, .stepCard p, .benefitCard p {
+.featureCard p, .benefitCard p { /* Removed .stepCard p here */
   font-size: 1rem;
   line-height: 1.7; /* Increased line height */
   color: var(--foreground-color);
   text-align: center; /* Center align card descriptions */
-}
-.stepCard p {
-    max-width: 300px;
-    margin: 0 auto; /* Center text if card is centered */
 }
 
 
 /* How It Works Section Styles */
 .howItWorksSection {
   background-color: var(--card-alt-bg); /* Use alt card bg or a specific section bg */
+  padding-bottom: 6rem; /* Extra padding for timeline visuals */
 }
 
-.stepIcon {
-  width: 60px;
-  height: 60px;
+.stepsTimeline {
+  position: relative;
+  max-width: 900px; /* Max width for the timeline container */
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.stepsTimeline::before { /* The central timeline line */
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  background-color: var(--primary-color, #cccccc); /* Use primary color or fallback to gray */
+  transform: translateX(-50%);
+  border-radius: 2px;
+}
+
+.stepsTimeline .stepCard {
+  padding: 1.5rem; /* Slightly adjusted padding */
+  width: calc(50% - 20px); /* Made cards even wider */
+  position: relative;
+  margin-bottom: 3rem; /* Space between cards vertically */
+  background-color: var(--card-background-color);
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  text-align: center; /* Center content within step cards */
+  border: 1px solid var(--card-border-color);
+}
+
+.stepsTimeline .stepCard:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+  border-color: var(--primary-color);
+}
+
+.stepsTimeline .stepCardLeft {
+  left: 0;
+  text-align: center; /* Center content */
+}
+
+.stepsTimeline .stepCardRight {
+  left: calc(50% + 20px); /* Adjusted position for even wider cards */
+  text-align: center; /* Center content */
+}
+
+/* Arrow pointing to the timeline */
+.stepsTimeline .stepCard::after {
+  content: '';
+  position: absolute;
+  top: 50%; /* Vertically center */
+  transform: translateY(-50%); /* Adjust for exact centering */
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.stepsTimeline .stepCardLeft::after {
+  right: -15px; /* Position arrow on the right side of the card */
+  border-width: 10px 0 10px 15px;
+  border-color: transparent transparent transparent #667EEA; /* Arrow color set to #667EEA */
+}
+
+.stepsTimeline .stepCardRight::after {
+  left: -15px; /* Position arrow on the left side of the card */
+  border-width: 10px 15px 10px 0;
+  border-color: transparent #667EEA transparent transparent; /* Arrow color set to #667EEA */
+}
+
+
+.stepsTimeline .stepCard h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-top: 0.5rem; /* Space above title if icon is present */
+  margin-bottom: 0.75rem;
+  color: var(--primary-color);
+}
+
+.stepsTimeline .stepCard p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-secondary-color); /* Use a secondary text color for description */
+  margin: 0; /* Remove default margins */
+}
+
+
+.stepIcon { /* Styles for the number icon */
+  width: 50px; /* Slightly smaller icon */
+  height: 50px;
   border-radius: 50%;
   background: var(--step-icon-gradient); 
   color: var(--hero-text-color); /* Assuming white/light text on gradient */
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.8rem;
+  font-size: 1.5rem; /* Adjusted font size */
   font-weight: 700;
-  margin: 0 auto 1.2rem;
-  box-shadow: var(--card-shadow);
+  margin: 0 auto 1rem; /* Centered with margin bottom */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 2px solid var(--background-color); /* Border to make it pop from card */
+}
+
+/* Specific alignment for icons inside left/right cards - now centered */
+.stepsTimeline .stepCardLeft .stepIcon,
+.stepsTimeline .stepCardRight .stepIcon {
+  margin: 0 auto 1rem; /* Centered with margin bottom, same as default .stepIcon */
 }
 
 
@@ -295,10 +381,46 @@
   .section {
     padding: 3rem 1rem; /* Adjusted */
   }
-  .featuresGrid, .stepsGrid, .benefitsGrid {
+  .featuresGrid, .benefitsGrid { /* Removed .stepsGrid */
     grid-template-columns: 1fr; 
     gap: 2rem; /* Adjusted */
   }
+
+  /* Timeline specific responsive adjustments */
+  .stepsTimeline::before {
+    left: 30px; /* Move timeline line to the left for vertical layout */
+    transform: translateX(0);
+    background-color: var(--primary-color, #cccccc); /* Ensure mobile also has the updated color */
+  }
+
+  .stepsTimeline .stepCard,
+  .stepsTimeline .stepCardLeft,
+  .stepsTimeline .stepCardRight {
+    width: calc(100% - 50px); /* Full width minus some padding/margin */
+    left: 45px; /* Position cards to the right of the new timeline line */
+    text-align: center !important; /* Force center align for all text in mobile */
+    margin-bottom: 2rem;
+  }
+  
+  .stepsTimeline .stepCardLeft .stepIcon,
+  .stepsTimeline .stepCardRight .stepIcon {
+    margin: 0 auto 1rem; /* Center icon for all cards in mobile */
+  }
+
+  .stepsTimeline .stepCard::after { /* Arrow for mobile */
+    top: 50%; /* Vertically center for mobile too */
+    transform: translateY(-50%); /* Adjust for exact centering */
+    left: -15px; /* Arrow on the left for all cards */
+    border-width: 10px 15px 10px 0;
+    border-color: transparent #667EEA transparent transparent; /* Arrow color set to #667EEA */
+  }
+  
+  .stepsTimeline .stepCardLeft::after,
+  .stepsTimeline .stepCardRight::after {
+    /* Common styles for arrows already defined above, just ensure they are applied */
+  }
+
+
   .sectionTitle {
     font-size: 1.8rem; /* Adjusted */
     margin-bottom: 2.5rem; /* Adjusted */

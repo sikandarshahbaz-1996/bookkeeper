@@ -69,21 +69,26 @@ export default function HomePage() {
       {/* How It Works Section */}
       <section className={`${styles.section} ${styles.howItWorksSection}`}>
         <h2 className={styles.sectionTitle}>How It Works</h2>
-        <div className={styles.stepsGrid}>
-          <div className={styles.stepCard}>
+        <div className={styles.stepsTimeline}> {/* Changed class for new structure */}
+          <div className={`${styles.stepCard} ${styles.stepCardLeft}`}>
             <StepIcon number="1" />
-            <h3>Sign Up</h3>
-            <p>Businesses and Professionals create their accounts in minutes.</p>
+            <h3>Join & Setup</h3>
+            <p>Create your account and set up your profile, whether you're a business seeking expertise or a professional offering services.</p>
           </div>
-          <div className={styles.stepCard}>
+          <div className={`${styles.stepCard} ${styles.stepCardRight}`}>
             <StepIcon number="2" />
-            <h3>Find Your Match</h3>
-            <p>Businesses search for pros based on needs; Pros showcase their skills.</p>
+            <h3>Discover & Connect</h3>
+            <p>Businesses easily find professionals using advanced search. Professionals showcase their expertise to a wide audience.</p>
           </div>
-          <div className={styles.stepCard}>
+          <div className={`${styles.stepCard} ${styles.stepCardLeft}`}>
             <StepIcon number="3" />
-            <h3>Connect & Collaborate</h3>
-            <p>Securely communicate, share files, and manage projects.</p>
+            <h3>Quote & Book</h3>
+            <p>Request and receive transparent quotes. Securely book services that fit your needs and budget.</p>
+          </div>
+          <div className={`${styles.stepCard} ${styles.stepCardRight}`}>
+            <StepIcon number="4" />
+            <h3>Collaborate & Succeed</h3>
+            <p>Manage projects, share documents, and make payments securely, all in one place, to achieve your financial goals.</p>
           </div>
         </div>
       </section>
