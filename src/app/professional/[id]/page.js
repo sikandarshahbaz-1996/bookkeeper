@@ -4,7 +4,8 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation'; // Import useRouter
 import Link from 'next/link';
 import styles from './page.module.css';
-import { FaArrowLeft, FaMapMarkerAlt, FaBriefcase, FaClock, FaGlobe, FaPhone, FaRegBuilding, FaUserTie, FaTools, FaStreetView, FaInfoCircle, FaEnvelope, FaStar, FaRegStar } from 'react-icons/fa'; // Added FaEnvelope, FaStar, FaRegStar
+import { FaMapMarkerAlt, FaBriefcase, FaClock, FaGlobe, FaPhone, FaRegBuilding, FaUserTie, FaTools, FaStreetView, FaInfoCircle, FaEnvelope, FaStar, FaRegStar } from 'react-icons/fa'; // Added FaEnvelope, FaStar, FaRegStar
+import BackButton from '@/app/components/BackButton/BackButton';
 
 // Helper component to display stars
 const DisplayStars = ({ rating, totalStars = 5 }) => {
@@ -166,9 +167,7 @@ function ProfessionalProfileContent() {
     <div className={styles.pageContainer}>
       <div className={styles.profileLayout}>
         <div className={styles.navigationHeader}>
-          <button onClick={() => router.back()} className={styles.backButton}>
-            <FaArrowLeft /> Back
-          </button>
+          <BackButton />
         </div>
         <header className={styles.header}>
           <h1 className={styles.name}>{professional.name || 'N/A'}</h1>

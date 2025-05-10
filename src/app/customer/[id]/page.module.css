@@ -16,7 +16,7 @@
 }
 
 .profileCard {
-  background-color: var(--background-color);
+  background-color: #FFFFFF; /* Changed to white */
   padding: 1.5rem;
   border-radius: 6px;
   margin-bottom: 1.5rem;
@@ -62,8 +62,8 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
 }
 
+/* Removed dark mode specific background for profileCard to keep it white */
 [data-theme="dark"] .profileCard {
-  background-color: var(--background-color-dark);
   border-color: var(--border-color-dark);
 }
 

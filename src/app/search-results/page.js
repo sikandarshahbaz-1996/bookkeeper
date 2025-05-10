@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
+import StyledLinkAsButton from '@/app/components/StyledLinkAsButton/StyledLinkAsButton';
 // Navbar and Footer are typically in RootLayout, not imported here directly
 // import Navbar from '../components/Navbar/Navbar'; 
 // import Footer from '../components/Footer/Footer';   
@@ -169,7 +170,7 @@ function SearchResultsContent() {
           )}
         </>
       )}
-       <Link href="/dashboard" className={styles.backLink} style={{marginTop: '2rem'}}>Back to Dashboard</Link>
+       <StyledLinkAsButton href="/dashboard" text="Back" icon="←" />
     </div>
   );
 }

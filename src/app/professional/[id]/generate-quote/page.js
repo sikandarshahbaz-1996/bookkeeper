@@ -4,7 +4,8 @@ import React, { useEffect, useState, Suspense, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
-import { FaArrowLeft, FaRegBuilding, FaUserTie, FaTrash, FaCalendarAlt } from 'react-icons/fa';
+import { FaRegBuilding, FaUserTie, FaTrash, FaCalendarAlt } from 'react-icons/fa';
+import BackButton from '@/app/components/BackButton/BackButton';
 import { toast } from 'react-toastify';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css'; // Default styling
@@ -375,9 +376,7 @@ function GenerateQuoteContent() {
     <div className={styles.pageContainer}>
       <div className={styles.quoteFormLayout}>
         <div className={styles.navigationHeader}>
-          <button onClick={() => router.back()} className={styles.backButton}>
-            <FaArrowLeft /> Back
-          </button>
+          <BackButton />
         </div>
 
         <header className={styles.professionalHeader}>

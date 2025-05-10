@@ -1,0 +1,26 @@
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  font-size: 1rem; /* 16px */
+  font-weight: 500;
+  color: #7C7CFF; /* Light purplish blue from screenshot */
+  background-color: #FFFFFF;
+  border: 1.5px solid #7C7CFF; /* Matching border */
+  border-radius: 8px; /* Rounded corners */
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  margin-bottom: 20px; /* Default margin for spacing, can be overridden */
+}
+
+.backButton:hover {
+  background-color: #F0F0FF; /* Slightly darker on hover */
+  color: #5C5CFF;
+}
+
+.backButton .arrow {
+  margin-right: 8px;
+  font-size: 1.2rem; /* Slightly larger arrow */
+}

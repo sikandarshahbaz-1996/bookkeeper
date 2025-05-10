@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import styles from './page.module.css'; // We'll create this file next
 import Link from 'next/link';
+import StyledLinkAsButton from '@/app/components/StyledLinkAsButton/StyledLinkAsButton';
 
 const CustomerProfilePage = () => {
   const params = useParams();
@@ -50,6 +51,7 @@ const CustomerProfilePage = () => {
 
   return (
     <div className={styles.container}>
+      <StyledLinkAsButton href="/dashboard" text="Back" icon="←" />
       <h1 className={styles.header}>Customer Profile</h1>
       <div className={styles.profileCard}>
         <div className={styles.profileItem}>
@@ -71,9 +73,6 @@ const CustomerProfilePage = () => {
         {/* Add any other customer details you wish to display */}
         {/* Ensure not to display sensitive information */}
       </div>
-      <Link href="/dashboard" className={styles.backLink}>
-        Back to Dashboard
-      </Link>
     </div>
   );
 };
