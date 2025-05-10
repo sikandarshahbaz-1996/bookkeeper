@@ -69,26 +69,38 @@ export default function HomePage() {
       {/* How It Works Section */}
       <section className={`${styles.section} ${styles.howItWorksSection}`}>
         <h2 className={styles.sectionTitle}>How It Works</h2>
-        <div className={styles.stepsTimeline}> {/* Changed class for new structure */}
-          <div className={`${styles.stepCard} ${styles.stepCardLeft}`}>
+        <div className={styles.stepsTimeline}>
+          {/* Step 1 */}
+          <div className={styles.timelineItem}>
             <StepIcon number="1" />
-            <h3>Join & Setup</h3>
-            <p>Create your account and set up your profile, whether you're a business seeking expertise or a professional offering services.</p>
+            <div className={`${styles.stepCard} ${styles.stepCardOnLeft}`}>
+              <h3>Join & Setup</h3>
+              <p>Create your account and set up your profile, whether you're a business seeking expertise or a professional offering services.</p>
+            </div>
           </div>
-          <div className={`${styles.stepCard} ${styles.stepCardRight}`}>
+          {/* Step 2 */}
+          <div className={styles.timelineItem}>
             <StepIcon number="2" />
-            <h3>Discover & Connect</h3>
-            <p>Businesses easily find professionals using advanced search. Professionals showcase their expertise to a wide audience.</p>
+            <div className={`${styles.stepCard} ${styles.stepCardOnRight}`}>
+              <h3>Discover & Connect</h3>
+              <p>Businesses easily find professionals using advanced search. Professionals showcase their expertise to a wide audience.</p>
+            </div>
           </div>
-          <div className={`${styles.stepCard} ${styles.stepCardLeft}`}>
+          {/* Step 3 */}
+          <div className={styles.timelineItem}>
             <StepIcon number="3" />
-            <h3>Quote & Book</h3>
-            <p>Request and receive transparent quotes. Securely book services that fit your needs and budget.</p>
+            <div className={`${styles.stepCard} ${styles.stepCardOnLeft}`}>
+              <h3>Quote & Book</h3>
+              <p>Request and receive transparent quotes. Securely book services that fit your needs and budget.</p>
+            </div>
           </div>
-          <div className={`${styles.stepCard} ${styles.stepCardRight}`}>
+          {/* Step 4 */}
+          <div className={styles.timelineItem}>
             <StepIcon number="4" />
-            <h3>Collaborate & Succeed</h3>
-            <p>Manage projects, share documents, and make payments securely, all in one place, to achieve your financial goals.</p>
+            <div className={`${styles.stepCard} ${styles.stepCardOnRight}`}>
+              <h3>Collaborate & Succeed</h3>
+              <p>Manage projects, share documents, and make payments securely, all in one place, to achieve your financial goals.</p>
+            </div>
           </div>
         </div>
       </section>

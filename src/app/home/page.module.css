@@ -189,6 +189,14 @@
   max-width: 900px; /* Max width for the timeline container */
   margin: 0 auto;
   padding: 2rem 0;
+  overflow: hidden; 
+}
+
+/* Clearfix for floated timeline items */
+.stepsTimeline::after {
+    content: "";
+    display: table;
+    clear: both;
 }
 
 .stepsTimeline::before { /* The central timeline line */
@@ -198,20 +206,52 @@
   bottom: 0;
   left: 50%;
   width: 4px;
-  background-color: var(--primary-color, #cccccc); /* Use primary color or fallback to gray */
+  background-color: var(--primary-color, #cccccc); 
   transform: translateX(-50%);
   border-radius: 2px;
+  z-index: 1; 
 }
 
-.stepsTimeline .stepCard {
-  padding: 1.5rem; /* Slightly adjusted padding */
-  width: calc(50% - 20px); /* Made cards even wider */
+.timelineItem {
   position: relative;
-  margin-bottom: 3rem; /* Space between cards vertically */
+  margin-bottom: 30px; /* Space between items */
+  display: flex; /* Use flexbox for alignment */
+  align-items: center; /* Vertically center card and allow icon to center against it */
+  width: 100%; /* Ensure it takes full width for centering calculations */
+}
+
+.timelineItem:last-child {
+  margin-bottom: 0;
+}
+
+.stepIcon { 
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--step-icon-gradient); 
+  color: var(--hero-text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 2px solid var(--background-color); 
+  position: absolute;
+  left: 50%;
+  top: 50%; 
+  transform: translate(-50%, -50%); /* Center the icon on the line relative to timelineItem */
+  z-index: 2; 
+}
+
+.stepsTimeline .stepCard { 
+  padding: 1.5rem;
+  width: calc(50% - 55px); /* Card width, 30px from icon center + 10px arrow + 15px space */
+  position: relative; 
   background-color: var(--card-background-color);
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-  text-align: center; /* Center content within step cards */
+  text-align: center;
   border: 1px solid var(--card-border-color);
 }
 
@@ -221,44 +261,51 @@
   border-color: var(--primary-color);
 }
 
-.stepsTimeline .stepCardLeft {
-  left: 0;
-  text-align: center; /* Center content */
+.stepCardOnLeft {
+  /* float: left; removed */
+  margin-right: auto; /* Push card to the left, away from center */
+  margin-left: 0; /* Ensure it aligns to the container start */
+  order: 0; /* Card first, then icon (implicitly) for visual left placement */
 }
 
-.stepsTimeline .stepCardRight {
-  left: calc(50% + 20px); /* Adjusted position for even wider cards */
-  text-align: center; /* Center content */
+.stepCardOnRight {
+  /* float: right; removed */
+  margin-left: auto; /* Push card to the right, away from center */
+  margin-right: 0; /* Ensure it aligns to the container end */
+  order: 2; /* Icon (implicitly order 1), then card for visual right placement */
 }
 
-/* Arrow pointing to the timeline */
+/* Re-order stepIcon for right cards if needed, or ensure HTML structure is icon then card */
+.timelineItem > .stepIcon { /* Ensure icon is part of the flex flow for ordering if needed */
+  order: 1; /* Icon in the middle */
+}
+
 .stepsTimeline .stepCard::after {
   content: '';
   position: absolute;
-  top: 50%; /* Vertically center */
-  transform: translateY(-50%); /* Adjust for exact centering */
+  top: 50%; 
+  transform: translateY(-50%);
   width: 0;
   height: 0;
   border-style: solid;
 }
 
-.stepsTimeline .stepCardLeft::after {
-  right: -15px; /* Position arrow on the right side of the card */
+.stepCardOnLeft::after {
+  right: -15px; 
   border-width: 10px 0 10px 15px;
-  border-color: transparent transparent transparent #667EEA; /* Arrow color set to #667EEA */
+  border-color: transparent transparent transparent #667EEA;
 }
 
-.stepsTimeline .stepCardRight::after {
-  left: -15px; /* Position arrow on the left side of the card */
+.stepCardOnRight::after {
+  left: -15px; 
   border-width: 10px 15px 10px 0;
-  border-color: transparent #667EEA transparent transparent; /* Arrow color set to #667EEA */
+  border-color: transparent #667EEA transparent transparent;
 }
-
 
 .stepsTimeline .stepCard h3 {
   font-size: 1.4rem;
   font-weight: 600;
-  margin-top: 0.5rem; /* Space above title if icon is present */
+  margin-top: 0; 
   margin-bottom: 0.75rem;
   color: var(--primary-color);
 }
@@ -266,31 +313,8 @@
 .stepsTimeline .stepCard p {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--text-secondary-color); /* Use a secondary text color for description */
-  margin: 0; /* Remove default margins */
-}
-
-
-.stepIcon { /* Styles for the number icon */
-  width: 50px; /* Slightly smaller icon */
-  height: 50px;
-  border-radius: 50%;
-  background: var(--step-icon-gradient); 
-  color: var(--hero-text-color); /* Assuming white/light text on gradient */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.5rem; /* Adjusted font size */
-  font-weight: 700;
-  margin: 0 auto 1rem; /* Centered with margin bottom */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  border: 2px solid var(--background-color); /* Border to make it pop from card */
-}
-
-/* Specific alignment for icons inside left/right cards - now centered */
-.stepsTimeline .stepCardLeft .stepIcon,
-.stepsTimeline .stepCardRight .stepIcon {
-  margin: 0 auto 1rem; /* Centered with margin bottom, same as default .stepIcon */
+  color: var(--text-secondary-color);
+  margin: 0;
 }
 
 
@@ -387,37 +411,42 @@
   }
 
   /* Timeline specific responsive adjustments */
-  .stepsTimeline::before {
-    left: 30px; /* Move timeline line to the left for vertical layout */
+  .stepsTimeline::before { 
+    left: 25px; 
     transform: translateX(0);
-    background-color: var(--primary-color, #cccccc); /* Ensure mobile also has the updated color */
+  }
+
+  .timelineItem {
+    display: flex; /* Use flex for vertical alignment on mobile too */
+    align-items: center;
+    margin-bottom: 30px; 
+    width: 100%; /* Take full width */
+    position: relative; /* Needed for absolute positioning of icon */
+  }
+  
+  .stepIcon { 
+    position: absolute; /* Position icon relative to timelineItem */
+    left: 25px; 
+    top: 50%; 
+    transform: translate(-50%, -50%); /* Center icon vertically */
+    z-index: 2;
   }
 
   .stepsTimeline .stepCard,
-  .stepsTimeline .stepCardLeft,
-  .stepsTimeline .stepCardRight {
-    width: calc(100% - 50px); /* Full width minus some padding/margin */
-    left: 45px; /* Position cards to the right of the new timeline line */
-    text-align: center !important; /* Force center align for all text in mobile */
-    margin-bottom: 2rem;
+  .stepCardOnLeft,
+  .stepCardOnRight {
+    width: calc(100% - 60px); /* Adjust width for mobile, leaving space for icon */
+    margin-left: 60px; /* Space from the timeline line/icon */
+    margin-right: 0;
+    text-align: left !important; 
+    margin-top: 0; /* Reset margin-top */
+    padding-top: 1rem; /* Adjust padding as needed */
+    padding-bottom: 1rem;
+    order: initial !important; 
   }
   
-  .stepsTimeline .stepCardLeft .stepIcon,
-  .stepsTimeline .stepCardRight .stepIcon {
-    margin: 0 auto 1rem; /* Center icon for all cards in mobile */
-  }
-
-  .stepsTimeline .stepCard::after { /* Arrow for mobile */
-    top: 50%; /* Vertically center for mobile too */
-    transform: translateY(-50%); /* Adjust for exact centering */
-    left: -15px; /* Arrow on the left for all cards */
-    border-width: 10px 15px 10px 0;
-    border-color: transparent #667EEA transparent transparent; /* Arrow color set to #667EEA */
-  }
-  
-  .stepsTimeline .stepCardLeft::after,
-  .stepsTimeline .stepCardRight::after {
-    /* Common styles for arrows already defined above, just ensure they are applied */
+  .stepsTimeline .stepCard::after { 
+    display: none; /* Hide arrows on mobile */
   }
 
 
