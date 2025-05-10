@@ -156,7 +156,7 @@ export default function HomePage() {
           animate={{ 
             opacity: 1, 
             y: ["-8px", "8px"], // Slow up and down movement
-            x: 0, // Slide in from right
+            x: -50, // Slide in from right
             transition: { 
               opacity: { duration: 0.8, delay: 1.2 }, // Fade in after other elements
               x: { duration: 0.8, delay: 1.2, ease: "easeOut" },
