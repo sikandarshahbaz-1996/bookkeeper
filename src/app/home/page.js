@@ -66,24 +66,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.sectionSecondary}`}>
-        <h2 className={styles.sectionTitle}>For Bookkeepers & Accountants</h2>
-        <div className={styles.featuresGrid}>
-          <div className={styles.featureCard}>
-            <h3>Showcase Your Expertise</h3>
-            <p>Create a professional profile, highlight your services, and reach a wider client base.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <h3>Manage Clients Efficiently</h3>
-            <p>Utilize our platform tools to streamline communication, file sharing, and project management.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <h3>Grow Your Practice</h3>
-            <p>Connect with businesses actively seeking your skills and expand your professional network.</p>
-          </div>
-        </div>
-      </section>
-
       {/* How It Works Section */}
       <section className={`${styles.section} ${styles.howItWorksSection}`}>
         <h2 className={styles.sectionTitle}>How It Works</h2>
