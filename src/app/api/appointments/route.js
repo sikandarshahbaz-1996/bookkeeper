@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { sendMail } from '@/lib/nodemailer';
+import { getAppointmentCreatedEmail } from '@/lib/emailTemplates';
 
 // Helper function to convert local HH:MM time to UTC HH:MM time
 const convertLocalToUTCHHMm = (localTimeString, localDateString, timezone) => {
@@ -375,6 +377,53 @@ export async function POST(request) {
 
     // Fetch the inserted document to return it (optional, but good practice)
     const createdAppointment = await appointmentsCollection.findOne({ _id: result.insertedId });
+
+    if (createdAppointment) {
+      try {
+        const usersCollection = await getCollection('users');
+        const customer = await usersCollection.findOne({ _id: new ObjectId(customerId) });
+        const professional = await usersCollection.findOne({ _id: new ObjectId(professionalId) });
+
+        if (customer && professional && customer.email && professional.email) {
+          const appointmentDetailsForEmail = {
+            professionalName: professional.name || `${professional.firstName} ${professional.lastName}`,
+            customerName: customer.name || `${customer.firstName} ${customer.lastName}`,
+            serviceName: createdAppointment.services.map(s => s.name).join(', '),
+            appointmentDate: createdAppointment.appointmentDate, // YYYY-MM-DD
+            appointmentTime: body.startTime, // HH:MM (local to professional, as submitted)
+            professionalTimezone: createdAppointment.professionalTimezone,
+            quote: createdAppointment.quotedPrice,
+            appointmentId: createdAppointment._id.toString(),
+          };
+
+          // Send email to customer
+          const customerEmailContent = getAppointmentCreatedEmail(appointmentDetailsForEmail, 'customer');
+          await sendMail({
+            to: customer.email,
+            subject: customerEmailContent.subject,
+            text: customerEmailContent.text,
+            html: customerEmailContent.html,
+          });
+          console.log(`Appointment creation email sent to customer ${customer.email}`);
+
+          // Send email to professional
+          const professionalEmailContent = getAppointmentCreatedEmail(appointmentDetailsForEmail, 'professional');
+          await sendMail({
+            to: professional.email,
+            subject: professionalEmailContent.subject,
+            text: professionalEmailContent.text,
+            html: professionalEmailContent.html,
+          });
+          console.log(`Appointment creation email sent to professional ${professional.email}`);
+
+        } else {
+          console.error('Could not send appointment creation emails: Customer or professional details (email) missing.');
+        }
+      } catch (emailError) {
+        console.error('Failed to send appointment creation emails:', emailError);
+        // Do not fail the request if email sending fails, but log it.
+      }
+    }
 
     return NextResponse.json({ message: 'Appointment requested successfully', appointment: createdAppointment }, { status: 201 });
 
