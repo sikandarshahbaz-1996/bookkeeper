@@ -182,7 +182,7 @@ export default function HomePage() {
               custom={index}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.3 }}
+              viewport={{ once: true, amount: 0.7 }}
               variants={step.direction === 'left' ? timelineItemFromLeft : timelineItemFromRight}
             >
               <StepIcon number={step.number} />
