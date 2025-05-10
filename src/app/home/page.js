@@ -18,6 +18,26 @@ const fadeIn = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
 
+// Base animation for hero items, delay will be customized per item
+const heroItemAnimation = { 
+  hidden: { opacity: 0, y: 200 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 1, 
+      delay: 0.6, // Base delay, navbar is 0.3s
+      ease: "easeOut" 
+    } 
+  },
+};
+
+// Renaming for clarity, this is for individual items within a staggered group
+const staggeredItemSlideUp = { 
+  hidden: { opacity: 0, y: 200 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }, 
+};
+
 const buttonHover = {
   hover: { scale: 1.05, transition: { duration: 0.2 } },
   tap: { scale: 0.95 },
@@ -86,21 +106,31 @@ export default function HomePage() {
     <main className={styles.main}>
       <motion.div
         className={styles.hero}
-        initial="hidden"
-        animate="visible"
-        variants={fadeIn}
+        // No main animation variant here, children will handle their own timed entries
+        initial="hidden" 
+        animate="visible" // This just triggers children to animate based on their variants
       >
-        <motion.h1 className={styles.title} variants={fadeIn}>
+        <motion.h1 className={styles.title} variants={heroItemAnimation}>
           Connect with Expert Bookkeepers & Accountants
         </motion.h1>
-        <motion.p className={styles.description} variants={fadeIn}>
+        <motion.p 
+          className={styles.description} 
+          variants={heroItemAnimation}
+          transition={{ ...heroItemAnimation.visible.transition, delay: 0.8 }} // Override delay
+        >
           Streamline your finances. Find trusted professionals for your bookkeeping and tax needs.
         </motion.p>
-        <motion.div className={styles.ctaContainer} variants={staggerContainer}>
+        <motion.div 
+          className={styles.ctaContainer} 
+          variants={heroItemAnimation} // Only for staggering children
+          initial="hidden" // Children will inherit this
+          animate="visible" // Children will inherit this
+          transition={{ delayChildren: 1.0 }} // Delay when this container's children start staggering
+        >
           <Link href="/signin?user=true" passHref>
             <motion.button
               className={`${styles.ctaButton} ${styles.ctaButtonPrimary}`}
-              variants={buttonHover}
+              variants={{ ...staggeredItemSlideUp, ...buttonHover }}
               whileHover="hover"
               whileTap="tap"
             >
@@ -110,7 +140,7 @@ export default function HomePage() {
           <Link href="/signin?pro=true" passHref>
             <motion.button
               className={`${styles.ctaButton} ${styles.ctaButtonSecondary}`}
-              variants={buttonHover}
+              variants={{ ...staggeredItemSlideUp, ...buttonHover }}
               whileHover="hover"
               whileTap="tap"
             >
