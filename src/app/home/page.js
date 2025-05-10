@@ -5,12 +5,48 @@ import { useRouter } from 'next/navigation'; // Import useRouter
 import { useAuth } from '@/context/AuthContext'; // Import useAuth
 import styles from './page.module.css';
 import Link from 'next/link';
+import { motion } from 'framer-motion'; // Import motion
 // Import specific icons from react-icons
-import { FaUserCheck, FaLock, FaChartLine } from 'react-icons/fa'; 
+import { FaUserCheck, FaLock, FaChartLine } from 'react-icons/fa';
 
 // Placeholder icon for steps (can be kept or replaced)
 const StepIcon = ({ number }) => <div className={styles.stepIcon}>{number}</div>;
-// BenefitIcon component is no longer needed as we use react-icons directly
+
+// Animation Variants
+const fadeIn = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+};
+
+const buttonHover = {
+  hover: { scale: 1.05, transition: { duration: 0.2 } },
+  tap: { scale: 0.95 },
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+    },
+  },
+};
+
+const cardSlideFromTopLeft = {
+  hidden: { opacity: 0, x: -50, y: -50 },
+  visible: { opacity: 1, x: 0, y: 0, transition: { type: 'spring', stiffness: 100 } },
+};
+
+const timelineItemFromLeft = {
+  hidden: { opacity: 0, x: -100 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.5 } },
+};
+
+const timelineItemFromRight = {
+  hidden: { opacity: 0, x: 100 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.5 } },
+};
 
 
 export default function HomePage() {
@@ -18,122 +54,139 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to dashboard if logged in and auth state is loaded
     if (!loading && isAuthenticated) {
       router.replace('/dashboard');
     }
   }, [isAuthenticated, loading, router]);
 
-  // Optionally, show loading state or null while checking auth
   if (loading || isAuthenticated) {
-    // Render loading or nothing to avoid flashing content before redirect
-    return <div>Loading...</div>; // Or return null;
+    return <div>Loading...</div>;
   }
 
-  // Render home page content only if not loading and not authenticated
+  const businessFeatures = [
+    { title: "Access a Network of Professionals", description: "Easily find and connect with vetted bookkeepers and accountants tailored to your industry and business size." },
+    { title: "Comprehensive Services", description: "From daily bookkeeping to annual tax filing, get the support you need to stay compliant and informed." },
+    { title: "Transparent & Secure", description: "Communicate and share documents securely. Know the costs upfront with transparent pricing." },
+  ];
+
+  const howItWorksSteps = [
+    { number: "1", title: "Join & Setup", description: "Create your account and set up your profile, whether you're a business seeking expertise or a professional offering services.", direction: "left" },
+    { number: "2", title: "Discover & Connect", description: "Businesses easily find professionals using advanced search. Professionals showcase their expertise to a wide audience.", direction: "right" },
+    { number: "3", title: "Quote & Book", description: "Request and receive transparent quotes. Securely book services that fit your needs and budget.", direction: "left" },
+    { number: "4", title: "Collaborate & Succeed", description: "Manage projects, share documents, and make payments securely, all in one place, to achieve your financial goals.", direction: "right" },
+  ];
+
+  const benefits = [
+    { icon: <FaUserCheck size={40} />, title: "Vetted Professionals", description: "Connect with experienced and verified bookkeepers and accountants." },
+    { icon: <FaLock size={40} />, title: "Secure Platform", description: "Your data and communications are protected with robust security measures." },
+    { icon: <FaChartLine size={40} />, title: "Grow Your Business", description: "Whether finding clients or streamlining finances, we help you succeed." },
+  ];
+
   return (
     <main className={styles.main}>
-      <div className={styles.hero}>
-        <h1 className={styles.title}>Connect with Expert Bookkeepers & Accountants</h1>
-        <p className={styles.description}>
+      <motion.div
+        className={styles.hero}
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+      >
+        <motion.h1 className={styles.title} variants={fadeIn}>
+          Connect with Expert Bookkeepers & Accountants
+        </motion.h1>
+        <motion.p className={styles.description} variants={fadeIn}>
           Streamline your finances. Find trusted professionals for your bookkeeping and tax needs.
-        </p>
-        <div className={styles.ctaContainer}>
+        </motion.p>
+        <motion.div className={styles.ctaContainer} variants={staggerContainer}>
           <Link href="/signin?user=true" passHref>
-            <button className={`${styles.ctaButton} ${styles.ctaButtonPrimary}`}>Find a Bookkeeper</button>
+            <motion.button
+              className={`${styles.ctaButton} ${styles.ctaButtonPrimary}`}
+              variants={buttonHover}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              Find a Bookkeeper
+            </motion.button>
           </Link>
           <Link href="/signin?pro=true" passHref>
-            <button className={`${styles.ctaButton} ${styles.ctaButtonSecondary}`}>I'm a Professional</button>
+            <motion.button
+              className={`${styles.ctaButton} ${styles.ctaButtonSecondary}`}
+              variants={buttonHover}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              I'm a Professional
+            </motion.button>
           </Link>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>For Business Owners</h2>
-        <div className={styles.featuresGrid}>
-          <div className={styles.featureCard}>
-            <h3>Access a Network of Professionals</h3>
-            <p>Easily find and connect with vetted bookkeepers and accountants tailored to your industry and business size.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <h3>Comprehensive Services</h3>
-            <p>From daily bookkeeping to annual tax filing, get the support you need to stay compliant and informed.</p>
-          </div>
-          <div className={styles.featureCard}>
-            <h3>Transparent & Secure</h3>
-            <p>Communicate and share documents securely. Know the costs upfront with transparent pricing.</p>
-          </div>
-        </div>
+        <motion.h2 className={styles.sectionTitle} initial="hidden" animate="visible" variants={fadeIn}>
+          For Business Owners
+        </motion.h2>
+        <motion.div
+          className={styles.featuresGrid}
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          {businessFeatures.map((feature, index) => (
+            <motion.div className={styles.featureCard} key={index} variants={cardSlideFromTopLeft}>
+              <h3>{feature.title}</h3>
+              <p>{feature.description}</p>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
 
-      {/* How It Works Section */}
       <section className={`${styles.section} ${styles.howItWorksSection}`}>
-        <h2 className={styles.sectionTitle}>How It Works</h2>
+        <motion.h2 className={styles.sectionTitle} initial="hidden" animate="visible" variants={fadeIn}>
+          How It Works
+        </motion.h2>
         <div className={styles.stepsTimeline}>
-          {/* Step 1 */}
-          <div className={styles.timelineItem}>
-            <StepIcon number="1" />
-            <div className={`${styles.stepCard} ${styles.stepCardOnLeft}`}>
-              <h3>Join & Setup</h3>
-              <p>Create your account and set up your profile, whether you're a business seeking expertise or a professional offering services.</p>
-            </div>
-          </div>
-          {/* Step 2 */}
-          <div className={styles.timelineItem}>
-            <StepIcon number="2" />
-            <div className={`${styles.stepCard} ${styles.stepCardOnRight}`}>
-              <h3>Discover & Connect</h3>
-              <p>Businesses easily find professionals using advanced search. Professionals showcase their expertise to a wide audience.</p>
-            </div>
-          </div>
-          {/* Step 3 */}
-          <div className={styles.timelineItem}>
-            <StepIcon number="3" />
-            <div className={`${styles.stepCard} ${styles.stepCardOnLeft}`}>
-              <h3>Quote & Book</h3>
-              <p>Request and receive transparent quotes. Securely book services that fit your needs and budget.</p>
-            </div>
-          </div>
-          {/* Step 4 */}
-          <div className={styles.timelineItem}>
-            <StepIcon number="4" />
-            <div className={`${styles.stepCard} ${styles.stepCardOnRight}`}>
-              <h3>Collaborate & Succeed</h3>
-              <p>Manage projects, share documents, and make payments securely, all in one place, to achieve your financial goals.</p>
-            </div>
-          </div>
+          {howItWorksSteps.map((step, index) => (
+            <motion.div
+              className={styles.timelineItem}
+              key={index}
+              custom={index}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={step.direction === 'left' ? timelineItemFromLeft : timelineItemFromRight}
+            >
+              <StepIcon number={step.number} />
+              <div className={`${styles.stepCard} ${step.direction === 'left' ? styles.stepCardOnLeft : styles.stepCardOnRight}`}>
+                <h3>{step.title}</h3>
+                <p>{step.description}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </section>
 
-      {/* Why Choose Us Section */}
       <section className={`${styles.section} ${styles.whyChooseUsSection}`}>
-        <h2 className={styles.sectionTitle}>Why Choose Bookkeeper Connect?</h2>
-        <div className={styles.benefitsGrid}>
-          <div className={styles.benefitCard}>
-            <div className={styles.benefitIconWrapper}> {/* Wrapper for styling */}
-              <FaUserCheck size={40} /> {/* Use react-icon */}
-            </div>
-            <h3>Vetted Professionals</h3>
-            <p>Connect with experienced and verified bookkeepers and accountants.</p>
-          </div>
-          <div className={styles.benefitCard}>
-             <div className={styles.benefitIconWrapper}>
-              <FaLock size={40} /> {/* Use react-icon */}
-            </div>
-            <h3>Secure Platform</h3>
-            <p>Your data and communications are protected with robust security measures.</p>
-          </div>
-          <div className={styles.benefitCard}>
-             <div className={styles.benefitIconWrapper}>
-              <FaChartLine size={40} /> {/* Use react-icon */}
-            </div>
-            <h3>Grow Your Business</h3>
-            <p>Whether finding clients or streamlining finances, we help you succeed.</p>
-          </div>
-        </div>
+        <motion.h2 className={styles.sectionTitle} initial="hidden" animate="visible" variants={fadeIn}>
+          Why Choose Bookkeeper Connect?
+        </motion.h2>
+        <motion.div
+          className={styles.benefitsGrid}
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          {benefits.map((benefit, index) => (
+            <motion.div className={styles.benefitCard} key={index} variants={cardSlideFromTopLeft}>
+              <div className={styles.benefitIconWrapper}>
+                {benefit.icon}
+              </div>
+              <h3>{benefit.title}</h3>
+              <p>{benefit.description}</p>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
-
-      {/* Footer is now in RootLayout */}
     </main>
   );
 }
