@@ -504,7 +504,7 @@ function GenerateQuoteContent() {
               
               {!isLoadingSlots && generatedQuote && totalServiceDurationMinutes > 0 && availableSlots.length > 0 && (
                 <div className={styles.slotsContainer}>
-                  <h4>Available Slots for {selectedDate.toLocaleDateString()}:</h4>
+                  <h4>Available Slots for {selectedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}:</h4>
                   <div className={styles.slotButtons}>
                     {availableSlots.map(slot => (
                       <button

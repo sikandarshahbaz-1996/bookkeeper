@@ -46,7 +46,7 @@ export async function GET(request) {
 
     const appointments = await appointmentsCollection.aggregate([
       { $match: query },
-      { $sort: { appointmentDate: 1, startTime: 1 } },
+      { $sort: { updatedAt: -1 } },
       // Populate customer details
       {
         $lookup: {

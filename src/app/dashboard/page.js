@@ -912,7 +912,7 @@ function DashboardPage() {
                       {app.status ? app.status.replace(/_/g, ' ') : 'Unknown Status'}
                     </span>
                   </div>
-                  <p><strong>Date:</strong> {new Date(app.appointmentDate + 'T00:00:00Z').toLocaleDateString()} {/* Ensure date is treated as UTC for consistent display */}</p>
+                  <p><strong>Date:</strong> {new Date(app.appointmentDate + 'T00:00:00Z').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} {/* Ensure date is treated as UTC for consistent display */}</p>
                   <p>
                     <strong>Time: </strong> 
                     {app.startTime ? formatToAmPm(convertFromUTCHHMm(app.startTime, app.professionalTimezone || 'UTC')) : 'N/A'} - {' '} 
@@ -988,13 +988,22 @@ function DashboardPage() {
                           </button>
                         )}
                         {profileData?.role === 'professional' && (
-                           <button
-                            onClick={() => handleAppointmentAction(app._id, 'cancel_by_professional')}
-                            className={`${styles.actionButton} ${styles.cancelAppointmentButton}`}
-                            disabled={isSubmittingAction}
-                          >
-                            {isSubmittingAction ? 'Processing...' : 'Cancel Appointment'}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handleAppointmentAction(app._id, 'cancel_by_professional')}
+                              className={`${styles.actionButton} ${styles.cancelAppointmentButton}`}
+                              disabled={isSubmittingAction}
+                            >
+                              {isSubmittingAction ? 'Processing...' : 'Cancel Appointment'}
+                            </button>
+                            <button
+                              onClick={() => handleAppointmentAction(app._id, 'complete')}
+                              className={`${styles.actionButton} ${styles.completeButton}`}
+                              disabled={isSubmittingAction}
+                            >
+                              {isSubmittingAction ? 'Processing...' : 'Complete Appointment'}
+                            </button>
+                          </>
                         )}
                       </>
                     )}

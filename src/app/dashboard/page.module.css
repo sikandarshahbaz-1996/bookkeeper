@@ -649,7 +649,7 @@
 }
 .status_completed {
   background-color: var(--primary-background-color, #cfe2ff);
-  color: var(--primary-color, #0d6efd);
+  color: var(--primary-color, #0063f8);
   border-color: var(--primary-border-color, #b6d4fe);
 }
 .status_unknown_status { /* For any other status not explicitly defined */
@@ -711,8 +711,8 @@
 .actionButton {
   padding: 8px 15px;
   border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 16px; /* Updated to match completeButton/Navbar buttons */
+  font-weight: 600; /* Updated to match completeButton/Navbar buttons */
   cursor: pointer;
   transition: background-color 0.2s ease, opacity 0.2s ease;
   border: none; 
@@ -754,6 +754,23 @@
 .cancelAppointmentButton:hover:not(:disabled) {
   background-color: var(--secondary-button-hover-background-color, #5a6268);
 }
+
+.completeButton { /* Style for the Complete Appointment button */
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+  padding: 10px 20px; /* Match Navbar button padding */
+  border: none;
+  border-radius: 6px; /* Match Navbar button radius */
+  font-size: 16px; /* Match Navbar button font size */
+  font-weight: 600; /* Match Navbar button font weight */
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  cursor: pointer; /* Ensure button cursor */
+}
+.completeButton:hover:not(:disabled) {
+  background-color: var(--primary-color-hover);
+}
+
 
 /* Modal styles - ensure they are robust */
 .modalBackdrop {

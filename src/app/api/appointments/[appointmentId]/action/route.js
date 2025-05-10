@@ -32,9 +32,9 @@ export async function PUT(request, context) {
     }
 
     const body = await request.json();
-    const { action, finalPrice: newFinalPrice } = body; // action: 'confirm', 'reject', 'counter', 'accept_counter', 'reject_counter', 'cancel_by_customer', 'cancel_by_professional'
+    const { action, finalPrice: newFinalPrice } = body; // action: 'confirm', 'reject', 'counter', 'accept_counter', 'reject_counter', 'cancel_by_customer', 'cancel_by_professional', 'complete'
 
-    const validActions = ['confirm', 'reject', 'counter', 'accept_counter', 'reject_counter', 'cancel_by_customer', 'cancel_by_professional'];
+    const validActions = ['confirm', 'reject', 'counter', 'accept_counter', 'reject_counter', 'cancel_by_customer', 'cancel_by_professional', 'complete'];
     if (!action || !validActions.includes(action)) {
       return NextResponse.json({ message: `Invalid action specified. Must be one of: ${validActions.join(', ')}.` }, { status: 400 });
     }
@@ -129,6 +129,16 @@ export async function PUT(request, context) {
         newStatus = 'cancelled_by_professional';
         historyEntry = { timestamp: now, actionBy: 'professional', userId: new ObjectId(professionalUserId), actionType: 'cancelled_appointment', details: {} };
       }
+    } else if (action === 'complete') {
+      // Professional completes the appointment
+      if (actingUser.role !== 'professional' || appointment.professionalId.toString() !== professionalUserId) {
+        return NextResponse.json({ message: 'Unauthorized: Only the assigned professional can complete this appointment.' }, { status: 403 });
+      }
+      if (appointment.status !== 'confirmed') {
+        return NextResponse.json({ message: `Action 'complete' not allowed on appointment with status: ${appointment.status}` }, { status: 400 });
+      }
+      newStatus = 'completed';
+      historyEntry = { timestamp: now, actionBy: 'professional', userId: new ObjectId(professionalUserId), actionType: 'completed_appointment', details: {} };
     } else {
       // This case should ideally not be reached if initial validActions check is comprehensive
       return NextResponse.json({ message: 'Invalid action type.' }, { status: 400 });
