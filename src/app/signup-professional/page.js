@@ -50,33 +50,9 @@ export default function SignUpProfessionalPage() {
     qualifications: [''],
     experience: [''],
     areasOfExpertise: [''], // For general skills (dynamic array of strings)
-    servicesOffered: [{ name: '', hourlyRate: '', duration: 60 }], // Initialized with one service item. Duration defaults to 1hr (60 mins).
     languagesSpoken: [],
     softwareProficiency: []
   });
-
-  // Handlers for servicesOffered
-  const handleServiceChange = (index, field, value) => {
-    const updatedServices = formData.servicesOffered.map((service, i) => {
-      if (i === index) {
-        return { ...service, [field]: value };
-      }
-      return service;
-    });
-    setFormData(prev => ({ ...prev, servicesOffered: updatedServices }));
-  };
-
-  const addServiceItem = () => {
-    setFormData(prev => ({
-      ...prev,
-      servicesOffered: [...prev.servicesOffered, { name: '', hourlyRate: '', duration: 60 }]
-    }));
-  };
-
-  const removeServiceItem = (index) => {
-    const updatedServices = formData.servicesOffered.filter((_, i) => i !== index);
-    setFormData(prev => ({ ...prev, servicesOffered: updatedServices }));
-  };
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -131,43 +107,6 @@ export default function SignUpProfessionalPage() {
       return;
     }
 
-    // Validate servicesOffered
-    const processedServices = [];
-    for (const service of formData.servicesOffered) {
-      const serviceName = service.name ? service.name.trim() : '';
-      const hourlyRateStr = service.hourlyRate ? String(service.hourlyRate).trim() : '';
-
-      if (serviceName) { // If a service has a name, it's considered an intentional entry
-        if (!hourlyRateStr) {
-          toast.error(`Hourly rate is mandatory for service: "${serviceName}".`);
-          setLoading(false);
-          return;
-        }
-        const hourlyRate = parseFloat(hourlyRateStr);
-        if (isNaN(hourlyRate) || hourlyRate <= 0) {
-          toast.error(`A valid positive hourly rate is mandatory for service: "${serviceName}".`);
-          setLoading(false);
-          return;
-        }
-        // Duration has a default and is a select, so it should always be valid if a serviceName exists
-        if (!service.duration) { 
-          toast.error(`Duration is mandatory for service: "${serviceName}".`);
-          setLoading(false);
-          return;
-        }
-        processedServices.push({
-          name: serviceName,
-          hourlyRate: hourlyRate,
-          duration: parseInt(service.duration, 10)
-        });
-      } else if (hourlyRateStr || (service.duration && parseInt(service.duration, 10) !== 60)) {
-        // Name is blank, but rate or non-default duration is filled. This is an incomplete service.
-        toast.error('One or more services are incomplete. Please provide a name or clear/remove the service entry.');
-        setLoading(false);
-        return;
-      }
-      // If serviceName is blank, hourlyRate is blank, and duration is default 60, it's an "empty" template service that will be ignored.
-    }
     // End of service validation
     
     // Prepare payload
@@ -177,7 +116,6 @@ export default function SignUpProfessionalPage() {
       qualifications: formData.qualifications.filter(q => q.trim() !== ''),
       experience: formData.experience.filter(exp => exp.trim() !== ''),
       areasOfExpertise: formData.areasOfExpertise.filter(area => area.trim() !== ''),
-      servicesOffered: processedServices, 
     };
 
     try {
@@ -216,7 +154,7 @@ export default function SignUpProfessionalPage() {
             <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} className={styles.input} required />
           </div>
           <div className={styles.inputGroup}>
-            <label htmlFor="email" className={styles.label}>Business Email Address</label>
+            <label htmlFor="email" className={styles.label}>Personal Email Address</label>
             <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} className={styles.input} required />
           </div>
           <div className={styles.inputGroup}>
@@ -304,66 +242,6 @@ export default function SignUpProfessionalPage() {
               )}
             </div>
           ))}
-
-          {/* Services Offered */}
-          <div className={styles.sectionTitle}>Services Offered</div>
-          {formData.servicesOffered.map((service, index) => (
-            <div key={`service-${index}`} className={styles.serviceEntry} style={{ border: '1px solid #eee', padding: '15px', marginBottom: '15px', borderRadius: '5px' }}>
-              <div className={styles.inputGroup}>
-                <label htmlFor={`serviceName-${index}`} className={styles.label}>Service Name</label>
-                <input
-                  type="text"
-                  id={`serviceName-${index}`}
-                  value={service.name}
-                  onChange={(e) => handleServiceChange(index, 'name', e.target.value)}
-                  className={styles.input}
-                  placeholder="e.g., Tax Consultation"
-                />
-              </div>
-              <div className={styles.inputGroup}>
-                <label htmlFor={`hourlyRate-${index}`} className={styles.label}>Hourly Rate ($)</label>
-                <input
-                  type="number"
-                  id={`hourlyRate-${index}`}
-                  value={service.hourlyRate}
-                  onChange={(e) => handleServiceChange(index, 'hourlyRate', e.target.value)}
-                  className={styles.input}
-                  placeholder="e.g., 75"
-                  min="0"
-                />
-              </div>
-              <div className={styles.inputGroup}>
-                <label htmlFor={`duration-${index}`} className={styles.label}>Service Duration</label>
-                <select
-                  id={`duration-${index}`}
-                  value={service.duration}
-                  onChange={(e) => handleServiceChange(index, 'duration', parseInt(e.target.value, 10))}
-                  className={styles.input}
-                >
-                  <option value="60">1 hr</option>
-                  <option value="120">2 hrs</option>
-                  <option value="180">3 hrs</option>
-                  <option value="240">4 hrs</option>
-                </select>
-              </div>
-              <button
-                type="button"
-                onClick={() => removeServiceItem(index)}
-                className={styles.removeButton} 
-                style={{ marginTop: '10px', background: '#f44336', color: 'white' }} // Basic styling for remove
-              >
-                Remove This Service
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addServiceItem}
-            className={styles.addButton} 
-            style={{ marginBottom: '20px', background: '#4CAF50', color: 'white' }} // Basic styling for add
-          >
-            Add Another Service
-          </button>
 
           {/* Languages Spoken */}
           <div className={styles.sectionTitle}>Languages Spoken</div>

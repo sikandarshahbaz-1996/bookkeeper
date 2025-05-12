@@ -6,8 +6,8 @@ import crypto from 'crypto'; // For generating random code
 
 export async function POST(request) {
   try {
-    // Destructure servicesOffered (for services with rates) and areasOfExpertise (for general skill strings)
-    const { name, email, password, role, phoneNumber, qualifications, experience, areasOfExpertise, servicesOffered, languagesSpoken, softwareProficiency } = await request.json();
+    // Destructure areasOfExpertise (for general skill strings)
+    const { name, email, password, role, phoneNumber, qualifications, experience, areasOfExpertise, languagesSpoken, softwareProficiency } = await request.json();
 
     // Basic validation
     if (!name || !email || !password || !role) {
@@ -59,7 +59,6 @@ export async function POST(request) {
         userData.qualifications = qualifications || [];
         userData.experience = experience || [];
         userData.areasOfExpertise = areasOfExpertise || []; // General skill strings
-        userData.servicesOffered = servicesOffered || []; // Services with {name, hourlyRate}
         userData.languagesSpoken = languagesSpoken || [];
         userData.softwareProficiency = softwareProficiency || [];
     }
