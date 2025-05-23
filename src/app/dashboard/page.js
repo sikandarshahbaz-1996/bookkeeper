@@ -311,7 +311,7 @@ function DashboardPage() {
               duration: s_api.duration !== undefined ? parseInt(s_api.duration, 10) : 60, // Add duration, default to 60
               minPrice: serviceOption ? serviceOption.minPrice : 0 
             };
-          }) 
+          })  
         : [];
 
       let initialAvailability = data.user.availability && Array.isArray(data.user.availability) && data.user.availability.length === 7
